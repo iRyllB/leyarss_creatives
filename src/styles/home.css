@@ -1,3 +1,5 @@
+/* RESET */
+
 *{
   margin:0;
   padding:0;
@@ -5,52 +7,56 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-html, body {
+html, body{
   width:100%;
-  height:100%;
+  min-height:100%;
   overflow-x:hidden;
 }
 
-/* root wrapper for home page */
-.home {
-  width:100%;
-  overflow-x:hidden;
-}
-
+/* ROOT */
 
 body{
-background:#02050f;
-color:white;
+  background:#02050f;
+  color:white;
+}
+
+/* HOME WRAPPER */
+
+.home{
+  width:100%;
+  overflow-x:hidden;
 }
 
 /* GLOBAL CONTAINER */
 
 .section-container{
-  /* helper class if you ever want a centered box */
   max-width:1200px;
   margin:0 auto;
   padding:0 40px;
   width:100%;
 }
 
-/* NAVBAR */
+
+/* =========================
+   NAVBAR
+========================= */
 
 .navbar{
-position:fixed;
-top:0;
-width:100%;
-height:74px;
+  position:fixed;
+  top:0;
+  width:100%;
+  height:74px;
 
-background:rgba(0,0,0,0.7);
-backdrop-filter: blur(6px);
-z-index:10;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  z-index:100;
 
-display:flex;
-justify-content:center;
+  display:flex;
+  justify-content:center;
 }
 
 .nav-container{
-  /* no max-width so it can span the full viewport if used */
+  max-width:1200px;
   width:100%;
   display:flex;
   justify-content:space-between;
@@ -59,53 +65,56 @@ justify-content:center;
 }
 
 .logo{
-display:flex;
-align-items:center;
-gap:10px;
-font-weight:bold;
-font-size:20px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:bold;
+  font-size:20px;
 }
 
 .logo img{
-width:40px;
+  width:40px;
 }
 
 .nav-links{
-display:flex;
-gap:40px;
-list-style:none;
-font-size:14px;
-letter-spacing:1px;
+  display:flex;
+  gap:40px;
+  list-style:none;
+  font-size:14px;
+  letter-spacing:1px;
+}
+
+.nav-links li{
+  cursor:pointer;
 }
 
 .contact-btn{
-background:linear-gradient(90deg,#ff007a,#ffde00);
-border:none;
-padding:12px 24px;
-border-radius:20px;
-font-weight:bold;
-cursor:pointer;
+  background:linear-gradient(90deg,#ff007a,#ffde00);
+  border:none;
+  padding:12px 24px;
+  border-radius:20px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 
-/* HERO */
+/* =========================
+   HERO
+========================= */
 
 .hero{
-  width:100vw;
+  width:100%;
   min-height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
   background:linear-gradient(120deg,#02050f,#0c1120);
   padding-top:74px;
-  margin-left:calc(-50vw + 50%);
 }
 
 .hero-container{
-  /* allow this section to stretch full width; inner elements can still
-     use margins or padding for spacing */
+  max-width:1200px;
   width:100%;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -113,69 +122,71 @@ cursor:pointer;
 }
 
 .hero-left{
-max-width:560px;
+  max-width:560px;
 }
 
 .hero-left h1{
-font-size:64px;
-line-height:1.1;
-font-weight:800;
+  font-size:64px;
+  line-height:1.1;
+  font-weight:800;
 }
 
 .hero-left span{
-color:#ffde00;
+  color:#ffde00;
 }
 
 .hero-left p{
-margin-top:15px;
-color:#bbb;
+  margin-top:15px;
+  color:#bbb;
 }
 
 .hero-buttons{
-margin-top:30px;
-display:flex;
-gap:20px;
+  margin-top:30px;
+  display:flex;
+  gap:20px;
 }
 
 .btn-primary{
-background:#ff007a;
-border:none;
-padding:12px 26px;
-border-radius:25px;
-color:white;
-font-weight:bold;
-cursor:pointer;
+  background:#ff007a;
+  border:none;
+  padding:12px 26px;
+  border-radius:25px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 .btn-outline{
-background:transparent;
-border:2px solid #00cfff;
-padding:12px 26px;
-border-radius:25px;
-color:#00cfff;
-font-weight:bold;
-cursor:pointer;
+  background:transparent;
+  border:2px solid #00cfff;
+  padding:12px 26px;
+  border-radius:25px;
+  color:#00cfff;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 .hero-right img{
-width:420px;
-transform:rotate(45deg);
+  width:420px;
+  max-width:100%;
+  transform:rotate(45deg);
 }
 
 
-/* ABOUT */
+/* =========================
+   ABOUT
+========================= */
 
 .about{
-  width:100vw;
+  width:100%;
   background:#030814;
   padding:120px 0;
   display:flex;
-  align-items:center;
   justify-content:center;
-  margin-left:calc(-50vw + 50%);
 }
 
 .about-container{
+  max-width:1200px;
   width:100%;
   display:flex;
   align-items:center;
@@ -185,76 +196,116 @@ transform:rotate(45deg);
 }
 
 .about-text{
-max-width:600px;
+  max-width:600px;
 }
 
 .about-text h2{
-font-size:36px;
-margin-bottom:20px;
+  font-size:36px;
+  margin-bottom:20px;
 }
 
 .about-text p{
-color:#ccc;
-line-height:1.6;
+  color:#ccc;
+  line-height:1.6;
 }
 
 .about-image img{
-width:420px;
-border-radius:8px;
+  width:420px;
+  max-width:100%;
+  border-radius:8px;
 }
 
 
-/* SERVICES */
+/* =========================
+   SERVICES
+========================= */
 
 .services{
-  width:100vw;
+  width:100%;
   padding:120px 0;
   display:flex;
-  align-items:center;
   justify-content:center;
-  margin-left:calc(-50vw + 50%);
 }
 
 .services-container{
+  max-width:1200px;
   width:100%;
   text-align:center;
   padding:0 40px;
 }
 
 .services h2{
-font-size:40px;
-margin-bottom:15px;
+  font-size:40px;
+  margin-bottom:15px;
 }
 
 .services-desc{
-max-width:650px;
-margin:auto;
-color:#aaa;
-margin-bottom:60px;
+  max-width:650px;
+  margin:auto;
+  color:#aaa;
+  margin-bottom:60px;
 }
 
 .services-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:40px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:40px;
 }
 
 .service-card{
-background:#1c1f27;
-padding:60px 20px;
-border-radius:16px;
-transition:0.3s;
+  background:#1c1f27;
+  padding:60px 20px;
+  border-radius:16px;
+  transition:0.3s;
 }
 
 .service-card:hover{
-transform:translateY(-5px);
+  transform:translateY(-6px);
 }
 
 .service-icon{
-height:80px;
-border-radius:12px;
-border:2px dashed #555;
-margin-bottom:20px;
+  height:80px;
+  border-radius:12px;
+  border:2px dashed #555;
+  margin-bottom:20px;
 }
 
-/* footer styles are in Footer.css component file */
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width:1000px){
+
+  .hero-container{
+    flex-direction:column;
+    text-align:center;
+    gap:60px;
+  }
+
+  .about-container{
+    flex-direction:column;
+    text-align:center;
+  }
+
+  .services-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+}
+
+@media (max-width:600px){
+
+  .nav-links{
+    display:none;
+  }
+
+  .hero-left h1{
+    font-size:42px;
+  }
+
+  .services-grid{
+    grid-template-columns:1fr;
+  }
+
+}
