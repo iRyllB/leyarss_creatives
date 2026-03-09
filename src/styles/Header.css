@@ -10,14 +10,12 @@
   justify-content: center;
   align-items: center;
 
-  /* Start with transparent background */
   background: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(6px);
   transition: background 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .site-header--scrolled {
-  /* Original solid background when scrolled */
   background: conic-gradient(
       from 90deg at 50% 50%,
       #000000 -89.72deg,
@@ -57,6 +55,10 @@
   object-fit: contain;
 }
 
+/* =========================
+   NAVIGATION
+========================= */
+
 .site-nav {
   display: flex;
   align-items: center;
@@ -69,16 +71,80 @@
   font-size: 16px;
 }
 
-.site-nav a {
+.site-nav-link {
+  position: relative;
   color: #ffffff;
   text-decoration: none;
+  padding-bottom: 10px;
+
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-.site-nav a:hover {
+.site-nav-link:hover {
   transform: translateY(-2px);
   opacity: 0.85;
 }
+
+/* underline indicator */
+.site-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 3px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.3s ease;
+
+  background: linear-gradient(
+    90deg,
+    #00aeef 0%,
+    #fff200 50%,
+    #ec008c 100%
+  );
+}
+
+/* hover indicator */
+.site-nav-link:hover::after {
+  width: 70%;
+  opacity: 0.8;
+}
+
+/* active section indicator */
+.site-nav-link.is-active::after {
+  width: 100%;
+  opacity: 1;
+
+  background: conic-gradient(
+    from 0deg,
+    #00aeef,
+    #fff200,
+    #ec008c,
+    #00aeef
+  );
+
+  animation: navRGB 3s linear infinite;
+
+  box-shadow:
+    0 0 6px rgba(0, 174, 239, 0.6),
+    0 0 10px rgba(255, 242, 0, 0.4),
+    0 0 14px rgba(236, 0, 140, 0.5);
+}
+
+@keyframes navRGB {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* =========================
+   CONTACT BUTTON
+========================= */
 
 .site-contact-btn {
   position: relative;
@@ -148,6 +214,10 @@
     transform: rotate(360deg);
   }
 }
+
+/* =========================
+   RESPONSIVE
+========================= */
 
 @media (max-width: 900px) {
   .site-header-container {
