@@ -1,0 +1,79 @@
+/* =========================
+   SERVICES
+========================= */
+
+.services {
+  width: 100%;
+  padding: 120px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.services-container {
+  max-width: 1200px;
+  width: 100%;
+  text-align: center;
+  padding: 0 40px;
+  margin: 0 auto;
+}
+
+.services h2 {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.services-desc {
+  max-width: 650px;
+  margin: 0 auto 60px;
+  color: #aaa;
+  line-height: 1.6;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.service-card {
+  background: #1c1f27;
+  padding: 60px 20px;
+  border-radius: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.service-icon {
+  height: 80px;
+  border-radius: 12px;
+  border: 2px dashed #555;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1000px) {
+  .services-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .services-container {
+    padding: 0 20px;
+  }
+
+  .services h2 {
+    font-size: 30px;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}

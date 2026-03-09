@@ -1,0 +1,76 @@
+/* =========================
+   PORTFOLIO PAGE
+========================= */
+
+.portfolio-page {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.portfolio-page-hero {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 40px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 174, 239, 0.05),
+    rgba(255, 242, 0, 0.03),
+    rgba(236, 0, 140, 0.05)
+  );
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 174, 239, 0.1);
+}
+
+.portfolio-page-hero h1 {
+  font-size: 56px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, #00aeef, #fff200, #ec008c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.portfolio-page-hero p {
+  font-size: 20px;
+  color: #aaa;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1000px) {
+  .portfolio-page-hero {
+    padding: 80px 40px;
+  }
+
+  .portfolio-page-hero h1 {
+    font-size: 42px;
+  }
+
+  .portfolio-page-hero p {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .portfolio-page-hero {
+    min-height: auto;
+    padding: 60px 20px;
+  }
+
+  .portfolio-page-hero h1 {
+    font-size: 32px;
+  }
+
+  .portfolio-page-hero p {
+    font-size: 16px;
+  }
+}
