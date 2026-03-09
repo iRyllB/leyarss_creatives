@@ -1,0 +1,74 @@
+.header{
+  width:100vw;
+  height:74px;
+
+  background:conic-gradient(
+    from 90deg at 50% 50%,
+    #000000 -89.72deg,
+    #061426 89.95deg,
+    #000000 270.28deg,
+    #061426 449.95deg
+  ), #06050A;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:100;
+  margin-left:calc(-50vw + 50%);
+}
+
+
+.header-container{
+  max-width:1200px;
+  width:100%;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+/* Logo */
+
+.logo img{
+height:55px;
+}
+
+/* Navigation */
+
+.nav{
+display:flex;
+gap:49px;
+font-family:'Inter',sans-serif;
+font-weight:700;
+font-size:16px;
+}
+
+.nav a{
+color:white;
+cursor:pointer;
+}
+
+/* Button */
+
+.contact-btn{
+width:154px;
+height:46px;
+
+background:linear-gradient(
+90deg,
+#F11683 24.43%,
+#FFF200 75.29%
+);
+
+border-radius:20px;
+border:none;
+
+font-weight:700;
+font-size:16px;
+color:white;
+cursor:pointer;
+}

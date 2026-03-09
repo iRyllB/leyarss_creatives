@@ -1,0 +1,260 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+  width:100%;
+  height:100%;
+  overflow-x:hidden;
+}
+
+/* root wrapper for home page */
+.home {
+  width:100%;
+  overflow-x:hidden;
+}
+
+
+body{
+background:#02050f;
+color:white;
+}
+
+/* GLOBAL CONTAINER */
+
+.section-container{
+  /* helper class if you ever want a centered box */
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 40px;
+  width:100%;
+}
+
+/* NAVBAR */
+
+.navbar{
+position:fixed;
+top:0;
+width:100%;
+height:74px;
+
+background:rgba(0,0,0,0.7);
+backdrop-filter: blur(6px);
+z-index:10;
+
+display:flex;
+justify-content:center;
+}
+
+.nav-container{
+  /* no max-width so it can span the full viewport if used */
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 40px;
+}
+
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+font-weight:bold;
+font-size:20px;
+}
+
+.logo img{
+width:40px;
+}
+
+.nav-links{
+display:flex;
+gap:40px;
+list-style:none;
+font-size:14px;
+letter-spacing:1px;
+}
+
+.contact-btn{
+background:linear-gradient(90deg,#ff007a,#ffde00);
+border:none;
+padding:12px 24px;
+border-radius:20px;
+font-weight:bold;
+cursor:pointer;
+}
+
+
+/* HERO */
+
+.hero{
+  width:100vw;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(120deg,#02050f,#0c1120);
+  padding-top:74px;
+  margin-left:calc(-50vw + 50%);
+}
+
+.hero-container{
+  /* allow this section to stretch full width; inner elements can still
+     use margins or padding for spacing */
+  width:100%;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 40px;
+}
+
+.hero-left{
+max-width:560px;
+}
+
+.hero-left h1{
+font-size:64px;
+line-height:1.1;
+font-weight:800;
+}
+
+.hero-left span{
+color:#ffde00;
+}
+
+.hero-left p{
+margin-top:15px;
+color:#bbb;
+}
+
+.hero-buttons{
+margin-top:30px;
+display:flex;
+gap:20px;
+}
+
+.btn-primary{
+background:#ff007a;
+border:none;
+padding:12px 26px;
+border-radius:25px;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn-outline{
+background:transparent;
+border:2px solid #00cfff;
+padding:12px 26px;
+border-radius:25px;
+color:#00cfff;
+font-weight:bold;
+cursor:pointer;
+}
+
+.hero-right img{
+width:420px;
+transform:rotate(45deg);
+}
+
+
+/* ABOUT */
+
+.about{
+  width:100vw;
+  background:#030814;
+  padding:120px 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:calc(-50vw + 50%);
+}
+
+.about-container{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:60px;
+  padding:0 40px;
+}
+
+.about-text{
+max-width:600px;
+}
+
+.about-text h2{
+font-size:36px;
+margin-bottom:20px;
+}
+
+.about-text p{
+color:#ccc;
+line-height:1.6;
+}
+
+.about-image img{
+width:420px;
+border-radius:8px;
+}
+
+
+/* SERVICES */
+
+.services{
+  width:100vw;
+  padding:120px 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:calc(-50vw + 50%);
+}
+
+.services-container{
+  width:100%;
+  text-align:center;
+  padding:0 40px;
+}
+
+.services h2{
+font-size:40px;
+margin-bottom:15px;
+}
+
+.services-desc{
+max-width:650px;
+margin:auto;
+color:#aaa;
+margin-bottom:60px;
+}
+
+.services-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:40px;
+}
+
+.service-card{
+background:#1c1f27;
+padding:60px 20px;
+border-radius:16px;
+transition:0.3s;
+}
+
+.service-card:hover{
+transform:translateY(-5px);
+}
+
+.service-icon{
+height:80px;
+border-radius:12px;
+border:2px dashed #555;
+margin-bottom:20px;
+}
+
+/* footer styles are in Footer.css component file */
