@@ -43,16 +43,35 @@ body {
 ========================= */
 
 .hero {
+  position: relative;
   width: 100%;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(120deg, #02050f, #0c1120);
   padding-top: 74px;
+  overflow: hidden;
+
+  background-image: url("/hero-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(2, 5, 15, 0.82),
+    rgba(12, 17, 32, 0.72)
+  );
+  z-index: 1;
 }
 
 .hero-container {
+  position: relative;
+  z-index: 2;
   max-width: 1200px;
   width: 100%;
   display: flex;
@@ -60,6 +79,7 @@ body {
   justify-content: space-between;
   padding: 0 40px;
   margin: 0 auto;
+  gap: 50px;
 }
 
 .hero-left {
@@ -68,56 +88,119 @@ body {
 
 .hero-left h1 {
   font-size: 64px;
-  line-height: 1.1;
+  line-height: 1.08;
   font-weight: 800;
 }
 
-.hero-left span {
-  color: #ffde00;
+.build-text {
+  color: #00aeef;
+}
+
+.print-text {
+  color: #fff200;
 }
 
 .hero-left p {
-  margin-top: 15px;
-  color: #bbb;
+  margin-top: 18px;
+  color: #d2d2d2;
+  font-size: 18px;
 }
 
 .hero-buttons {
-  margin-top: 30px;
+  margin-top: 34px;
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
 }
 
-.btn-primary {
-  background: #ff007a;
-  border: none;
-  padding: 12px 26px;
-  border-radius: 25px;
-  color: white;
-  font-weight: bold;
+/* HERO BRAND BUTTON */
+
+.hero-brand-btn {
+  position: relative;
+  min-width: 190px;
+  height: 52px;
+  padding: 0 28px;
+  border: 2px solid transparent;
+  outline: none;
+  border-radius: 999px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  overflow: hidden;
+  z-index: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
+.hero-btn-works {
+  background: #ce0c6f;
+  border-color: #f34aa0;
+  box-shadow:
+    0 0 10px rgba(206, 12, 111, 0.55),
+    0 0 18px rgba(243, 74, 160, 0.35);
 }
 
-.btn-outline {
+.hero-btn-contact {
+  background: #03506f;
+  border-color: #1d8fc0;
+  box-shadow:
+    0 0 10px rgba(3, 80, 111, 0.55),
+    0 0 18px rgba(29, 143, 192, 0.35);
+}
+
+.hero-brand-btn::before {
+  content: "";
+  position: absolute;
+  inset: -140%;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    #00aeef 0deg,
+    #fff200 120deg,
+    #ec008c 240deg,
+    #00aeef 360deg
+  );
+  opacity: 0;
+  z-index: -2;
+}
+
+.hero-brand-btn::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
   background: transparent;
-  border: 2px solid #00cfff;
-  padding: 12px 26px;
-  border-radius: 25px;
-  color: #00cfff;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+  z-index: -1;
+  transition: background 0.3s ease;
 }
 
-.btn-outline:hover {
-  transform: translateY(-2px);
-  background: rgba(0, 207, 255, 0.08);
+.hero-brand-btn:hover {
+  transform: scale(1.06);
+  background: transparent;
+  border-color: transparent;
+  box-shadow:
+    0 0 12px rgba(0, 174, 239, 0.28),
+    0 0 18px rgba(255, 242, 0, 0.18),
+    0 0 24px rgba(236, 0, 140, 0.22);
+}
+
+.hero-brand-btn:hover::before {
+  opacity: 1;
+  animation: heroSpinBorder 2.2s linear infinite;
+}
+
+.hero-brand-btn:hover::after {
+  background: #08101c;
+}
+
+@keyframes heroSpinBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .hero-right {
@@ -131,8 +214,10 @@ body {
   max-width: 100%;
   height: auto;
   object-fit: contain;
-  transform: rotate(45deg);
   display: block;
+  transform: none;
+  filter: drop-shadow(0 0 18px rgba(0, 174, 239, 0.16))
+    drop-shadow(0 0 24px rgba(236, 0, 140, 0.12));
 }
 
 /* =========================
@@ -276,6 +361,10 @@ body {
     font-size: 42px;
   }
 
+  .hero-left p {
+    font-size: 16px;
+  }
+
   .services h2,
   .about-text h2 {
     font-size: 30px;
@@ -293,5 +382,12 @@ body {
   .about-image img {
     width: 100%;
     max-width: 340px;
+  }
+
+  .hero-brand-btn {
+    min-width: 170px;
+    height: 48px;
+    font-size: 14px;
+    padding: 0 22px;
   }
 }
