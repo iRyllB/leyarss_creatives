@@ -10,6 +10,14 @@
   justify-content: center;
   align-items: center;
 
+  /* Start with transparent background */
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6px);
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.site-header--scrolled {
+  /* Original solid background when scrolled */
   background: conic-gradient(
       from 90deg at 50% 50%,
       #000000 -89.72deg,
@@ -18,6 +26,7 @@
       #061426 449.95deg
     ),
     #06050a;
+  backdrop-filter: blur(6px);
 }
 
 .site-header-container {
