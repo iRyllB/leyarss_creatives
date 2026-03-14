@@ -37,7 +37,7 @@ export default function AdminLogin() {
       </div>
 
       {/* Keep your existing footer */}
-      <Footer />
+
     </div>
   );
 }
