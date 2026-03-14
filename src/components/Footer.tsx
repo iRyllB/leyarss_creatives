@@ -18,10 +18,10 @@ export default function Footer(){
 
         <div className="footer-col">
           <h3>Quick Links</h3>
-          <p>Home</p>
-          <p>About Us</p>
-          <p>Services</p>
-          <p>Portfolio</p>
+          <a href="#home">Home</a>
+          <a href="#about">About Us</a>
+          <a href="#services">Services</a>
+          <a href="#portfolio">Portfolio</a>
         </div>
 
         <div className="footer-col">
@@ -36,12 +36,12 @@ export default function Footer(){
           </p>
         </div>
 
+        {/* ✅ REPLACED COLUMN */}
         <div className="footer-col">
-          <h3>Contact Us</h3>
-          <p>Design</p>
-          <p>Development</p>
-          <p>Consulting</p>
-          <p>Support</p>
+          <h3>Admin</h3>
+          <a href="/adminlogin" className="admin-login-btn">
+            Admin Login
+          </a>
         </div>
 
       </div>
