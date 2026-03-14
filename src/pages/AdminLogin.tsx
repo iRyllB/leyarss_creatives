@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "../styles/AdminLogin.css";
-import Footer from "../components/Footer";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -8,35 +7,64 @@ export default function AdminLogin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just open a blank page or console.log
     console.log("Admin login attempted:", username, password);
     alert("This is a placeholder login page.");
   };
 
   return (
     <div className="admin-login-page">
+
+      <div className="admin-header">
+        <h1>
+          LEYARSS <span>CREATIVES</span>
+        </h1>
+        <p>ADMIN PORTAL</p>
+      </div>
+
       <div className="login-container">
-        <h2>Admin Login</h2>
         <form onSubmit={handleLogin} className="login-form">
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Login</button>
+
+          <div className="input-group">
+            <label>USERNAME OR EMAIL</label>
+            <input
+              type="text"
+              placeholder="admin@leyarss.com"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <div className="password-label">
+              <label>PASSWORD</label>
+              <span className="forgot">Forgot?</span>
+            </div>
+
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="remember">
+            <input type="checkbox" id="remember" />
+            <label htmlFor="remember">Keep me logged in</label>
+          </div>
+
+          <button type="submit" className="login-btn">
+            AUTHORIZE ACCESS
+          </button>
+
         </form>
       </div>
 
-      {/* Keep your existing footer */}
+      <p className="admin-footer-text">
+        © 2026 LEYARSS CREATIVES. SECURED ENVIRONMENT.
+      </p>
 
     </div>
   );
