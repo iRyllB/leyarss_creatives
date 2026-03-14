@@ -7,7 +7,7 @@ export default function Footer(){
       <div className="footer-container">
 
         <div className="footer-brand">
-          <img src="/logo.png"/>
+          <img src="/logo.png" alt="Leyarss Logo"/>
           
           <div className="socials">
             <div className="circle"/>
@@ -36,7 +36,6 @@ export default function Footer(){
           </p>
         </div>
 
-        {/* ✅ REPLACED COLUMN */}
         <div className="footer-col">
           <h3>Admin</h3>
           <a href="/adminlogin" className="admin-login-btn">

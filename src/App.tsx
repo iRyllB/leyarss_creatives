@@ -1,11 +1,14 @@
-import Home from "./pages/Home"
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import AdminLogin from "./pages/AdminLogin";
 
 function App() {
   return (
-    <>
-      <Home />
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/adminlogin" element={<AdminLogin />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
