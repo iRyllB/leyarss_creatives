@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import "../styles/Header.css";
 
-export default function Header() {
+type HeaderProps = {
+  onContactClick?: () => void;
+};
+
+export default function Header({ onContactClick }: HeaderProps) {
   const navItems = useMemo(
     () => [
       { label: "HOME", href: "#home", id: "home" },
@@ -62,7 +66,9 @@ export default function Header() {
           ))}
         </nav>
 
-        <button className="site-contact-btn">Contact Us</button>
+        <button className="site-contact-btn" type="button" onClick={onContactClick}>
+          Contact Us
+        </button>
       </div>
     </header>
   );

@@ -1,6 +1,10 @@
 import "../styles/Hero.css";
 
-export default function Hero() {
+type HeroProps = {
+  onContactClick?: () => void;
+};
+
+export default function Hero({ onContactClick }: HeroProps) {
   return (
     <section className="hero" id="home">
       <div className="hero-overlay"></div>
@@ -20,7 +24,11 @@ export default function Hero() {
               <span>VIEW OUR WORKS</span>
             </button>
 
-            <button className="hero-brand-btn hero-btn-contact">
+            <button
+              className="hero-brand-btn hero-btn-contact"
+              type="button"
+              onClick={onContactClick}
+            >
               <span>CONTACT US</span>
             </button>
           </div>

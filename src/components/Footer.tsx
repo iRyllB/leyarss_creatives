@@ -38,10 +38,10 @@ export default function Footer(){
 
         <div className="footer-col">
           <h3>Contact Us</h3>
-          <p>Lorem</p>
-          <p>Ispum</p>
-          <p>Lorem</p>
-          <p>Ispum</p>
+          <p>Design</p>
+          <p>Development</p>
+          <p>Consulting</p>
+          <p>Support</p>
         </div>
 
       </div>
