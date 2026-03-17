@@ -68,6 +68,18 @@ export default function AdminDashboard() {
     setNewService({ title: "", category: "", image: "", description: "" });
   };
 
+  const handleSelectImage = (
+    files: FileList | null,
+    setter: (value: string) => void
+  ) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const allowed = ["image/jpeg", "image/png"];
+    if (!allowed.includes(file.type)) return;
+    const url = URL.createObjectURL(file);
+    setter(url);
+  };
+
   const handleAddPortfolioItem = () => {
     if (!newPortfolioItem.title || !newPortfolioItem.image) return;
     addPortfolioItem(activePortfolioTab, newPortfolioItem);
@@ -198,11 +210,26 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div className="field-pair">
-                      <label>Image URL</label>
-                      <input
-                        value={content.hero.image}
-                        onChange={(e) => updateHero({ image: e.target.value })}
-                      />
+                      <label>Image</label>
+                      <div className="file-field">
+                        <div className="file-display" title={content.hero.image}>
+                          {content.hero.image || "Upload image (.jpg, .png)"}
+                        </div>
+                        <label className="file-btn">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg"
+                            hidden
+                            onChange={(e) =>
+                              handleSelectImage(
+                                e.target.files,
+                                (val) => updateHero({ image: val })
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -247,11 +274,26 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div className="field-pair">
-                      <label>Image URL</label>
-                      <input
-                        value={content.about.image}
-                        onChange={(e) => updateAbout({ image: e.target.value })}
-                      />
+                      <label>Image</label>
+                      <div className="file-field">
+                        <div className="file-display" title={content.about.image}>
+                          {content.about.image || "Upload image (.jpg, .png)"}
+                        </div>
+                        <label className="file-btn">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg"
+                            hidden
+                            onChange={(e) =>
+                              handleSelectImage(
+                                e.target.files,
+                                (val) => updateAbout({ image: val })
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -303,13 +345,26 @@ export default function AdminDashboard() {
                           />
                         </div>
                         <div className="field-pair">
-                          <label>Image URL</label>
-                          <input
-                            value={service.image}
-                            onChange={(e) =>
-                              updateService(service.id, { image: e.target.value })
-                            }
-                          />
+                          <label>Image</label>
+                          <div className="file-field">
+                            <div className="file-display" title={service.image}>
+                              {service.image || "Upload image (.jpg, .png)"}
+                            </div>
+                            <label className="file-btn">
+                              Upload
+                              <input
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                hidden
+                                onChange={(e) =>
+                                  handleSelectImage(
+                                    e.target.files,
+                                    (val) => updateService(service.id, { image: val })
+                                  )
+                                }
+                              />
+                            </label>
+                          </div>
                         </div>
                         <div className="field-pair">
                           <label>Caption</label>
@@ -351,18 +406,35 @@ export default function AdminDashboard() {
                         setNewService((prev) => ({ ...prev, category: e.target.value }))
                       }
                     />
-                    <input
-                      placeholder="Image path e.g. /service-7.jpg"
-                      value={newService.image}
-                      onChange={(e) =>
-                        setNewService((prev) => ({ ...prev, image: e.target.value }))
-                      }
-                    />
+                    <div className="file-field">
+                      <div
+                        className="file-display"
+                        title={newService.image || "Upload image"}
+                      >
+                        {newService.image
+                          ? newService.image
+                          : "Upload image (.jpg, .png)"}
+                      </div>
+                      <label className="file-btn">
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          hidden
+                          onChange={(e) =>
+                            handleSelectImage(
+                              e.target.files,
+                              (val) => setNewService((prev) => ({ ...prev, image: val }))
+                            )
+                          }
+                        />
+                      </label>
+                    </div>
                   </div>
-                  <textarea
-                    placeholder="Description"
-                    value={newService.description}
-                    onChange={(e) =>
+              <textarea
+                placeholder="Description"
+                value={newService.description}
+                onChange={(e) =>
                       setNewService((prev) => ({ ...prev, description: e.target.value }))
                     }
                   />
@@ -423,15 +495,29 @@ export default function AdminDashboard() {
                           />
                         </div>
                         <div className="field-pair">
-                          <label>Image URL</label>
-                          <input
-                            value={item.image}
-                            onChange={(e) =>
-                              updatePortfolioItem(activePortfolioTab, item.id, {
-                                image: e.target.value,
-                              })
-                            }
-                          />
+                          <label>Image</label>
+                          <div className="file-field">
+                            <div className="file-display" title={item.image}>
+                              {item.image || "Upload image (.jpg, .png)"}
+                            </div>
+                            <label className="file-btn">
+                              Upload
+                              <input
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                hidden
+                                onChange={(e) =>
+                                  handleSelectImage(
+                                    e.target.files,
+                                    (val) =>
+                                      updatePortfolioItem(activePortfolioTab, item.id, {
+                                        image: val,
+                                      })
+                                  )
+                                }
+                              />
+                            </label>
+                          </div>
                         </div>
                         <div className="field-pair">
                           <label>Caption</label>
@@ -471,21 +557,39 @@ export default function AdminDashboard() {
                         }))
                       }
                     />
-                    <input
-                      placeholder="Image path e.g. /portfolio-new.jpg"
-                      value={newPortfolioItem.image}
-                      onChange={(e) =>
-                        setNewPortfolioItem((prev) => ({
-                          ...prev,
-                          image: e.target.value,
-                        }))
-                      }
-                    />
+                    <div className="file-field">
+                      <div
+                        className="file-display"
+                        title={newPortfolioItem.image || "Upload image"}
+                      >
+                        {newPortfolioItem.image
+                          ? newPortfolioItem.image
+                          : "Upload image (.jpg, .png)"}
+                      </div>
+                      <label className="file-btn">
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          hidden
+                          onChange={(e) =>
+                            handleSelectImage(
+                              e.target.files,
+                              (val) =>
+                                setNewPortfolioItem((prev) => ({
+                                  ...prev,
+                                  image: val,
+                                }))
+                            )
+                          }
+                        />
+                      </label>
+                    </div>
                   </div>
-                  <textarea
-                    placeholder="Caption / details"
-                    value={newPortfolioItem.details}
-                    onChange={(e) =>
+              <textarea
+                placeholder="Caption / details"
+                value={newPortfolioItem.details}
+                onChange={(e) =>
                       setNewPortfolioItem((prev) => ({
                         ...prev,
                         details: e.target.value,
