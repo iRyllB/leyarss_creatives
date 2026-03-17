@@ -1,0 +1,38 @@
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+}
+
+.confirm-card {
+  width: min(480px, 90vw);
+  background: #0f141d;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  color: #f8f8f8;
+}
+
+.confirm-header h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.confirm-header p {
+  margin: 0;
+  color: #c2c8d4;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}

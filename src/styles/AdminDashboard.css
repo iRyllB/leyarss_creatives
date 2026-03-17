@@ -469,7 +469,7 @@
 
 .file-field {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 10px;
   align-items: center;
 }
@@ -498,6 +498,43 @@
     0 0 12px rgba(0, 174, 239, 0.35),
     0 0 20px rgba(29, 143, 192, 0.32);
   opacity: 0.96;
+}
+
+.file-display {
+  padding: 12px 14px;
+  background: #0f141d;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  color: #dfe7f5;
+  font-size: 13px;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.file-remove {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #f34aa0;
+  color: #f5f7fb;
+  background: #1a0c18;
+  box-shadow:
+    0 0 10px rgba(206, 12, 111, 0.3),
+    0 0 16px rgba(236, 0, 140, 0.2);
+}
+
+.file-remove:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
 }
 
 .add-row h3 {
