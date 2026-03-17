@@ -1,21 +1,22 @@
 import "../styles/About.css";
+import { useContent } from "../context/ContentContext";
 
 export default function About() {
+  const {
+    content: { about },
+  } = useContent();
+
   return (
     <section className="about" id="about">
       <div className="about-container">
         <div className="about-text">
-          <h2>About Leyarss Creatives</h2>
+          <h2>{about.title}</h2>
 
-          <p>
-            At LEYARSS CREATIVES DESIGNS, our success is driven by a team of
-            passionate creatives, strategic thinkers, and skilled
-            professionals dedicated to bringing brands to life.
-          </p>
+          <p>{about.body}</p>
         </div>
 
         <div className="about-image">
-          <img src="/about.jpg" alt="About Leyarss Creatives" />
+          <img src={about.image} alt="About Leyarss Creatives" />
         </div>
       </div>
     </section>

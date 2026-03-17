@@ -30,13 +30,31 @@ export type PortfolioCategory = {
   items: PortfolioItem[];
 };
 
+export type HeroContent = {
+  line1: string;
+  line2: string;
+  line3: string;
+  subtext: string;
+  image: string;
+};
+
+export type AboutContent = {
+  title: string;
+  body: string;
+  image: string;
+};
+
 type ContentState = {
+  hero: HeroContent;
+  about: AboutContent;
   services: Service[];
   portfolio: Record<TabKey, PortfolioCategory>;
 };
 
 type ContentContextValue = {
   content: ContentState;
+  updateHero: (data: Partial<HeroContent>) => void;
+  updateAbout: (data: Partial<AboutContent>) => void;
   addService: (service: Omit<Service, "id">) => void;
   updateService: (id: string, data: Partial<Service>) => void;
   removeService: (id: string) => void;
@@ -51,6 +69,18 @@ type ContentContextValue = {
 };
 
 const defaultContent: ContentState = {
+  hero: {
+    line1: "WE DESIGN",
+    line2: "WE BUILD",
+    line3: "WE PRINT",
+    subtext: "Your Vision is Our Mission",
+    image: "/logo-large.png",
+  },
+  about: {
+    title: "About Leyarss Creatives",
+    body: "At LEYARSS CREATIVES DESIGNS, our success is driven by a team of passionate creatives, strategic thinkers, and skilled professionals dedicated to bringing brands to life.",
+    image: "/about.jpg",
+  },
   services: [
     {
       id: "srv-1",
@@ -229,8 +259,22 @@ const generateId = () =>
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<ContentState>(() => {
     if (typeof window === "undefined") return defaultContent;
-    const stored = localStorage.getItem("leyarss-content");
-    return stored ? JSON.parse(stored) : defaultContent;
+    try {
+      const stored = localStorage.getItem("leyarss-content");
+      if (!stored) return defaultContent;
+      const parsed = JSON.parse(stored) as Partial<ContentState>;
+      return {
+        ...defaultContent,
+        ...parsed,
+        hero: { ...defaultContent.hero, ...(parsed.hero || {}) },
+        about: { ...defaultContent.about, ...(parsed.about || {}) },
+        services: parsed.services ?? defaultContent.services,
+        portfolio: { ...defaultContent.portfolio, ...(parsed.portfolio || {}) },
+      };
+    } catch (e) {
+      console.warn("Failed to parse stored content, falling back to defaults", e);
+      return defaultContent;
+    }
   });
 
   useEffect(() => {
@@ -245,6 +289,14 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         ...prev,
         services: [...prev.services, { ...service, id: generateId() }],
       }));
+    };
+
+    const updateHero = (data: Partial<HeroContent>) => {
+      setContent((prev) => ({ ...prev, hero: { ...prev.hero, ...data } }));
+    };
+
+    const updateAbout = (data: Partial<AboutContent>) => {
+      setContent((prev) => ({ ...prev, about: { ...prev.about, ...data } }));
     };
 
     const updateService = (id: string, data: Partial<Service>) => {
@@ -325,6 +377,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       updatePortfolioItem,
       removePortfolioItem,
       applyChanges,
+      updateHero,
+      updateAbout,
     };
   }, [content]);
 
