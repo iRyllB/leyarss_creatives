@@ -6,6 +6,7 @@ import {
   type PortfolioItem,
   useContent,
 } from "../context/ContentContext";
+import ConfirmModal from "../components/ConfirmModal";
 import "../styles/AdminDashboard.css";
 
 type SectionKey = "hero" | "about" | "services" | "portfolio";
@@ -44,6 +45,18 @@ export default function AdminDashboard() {
     details: "",
   });
 
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
   useEffect(() => {
     const authed = localStorage.getItem("leyarss-admin-authed") === "true";
     if (!authed) {
@@ -52,14 +65,29 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("leyarss-admin-authed");
-    navigate("/adminlogin");
+    askConfirm("Log out?", "You will exit the admin console.", () => {
+      localStorage.removeItem("leyarss-admin-authed");
+      navigate("/adminlogin");
+    });
   };
 
+  const askConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmState({ open: true, title, message, onConfirm });
+  };
+
+  const closeConfirm = () =>
+    setConfirmState((prev) => ({ ...prev, open: false }));
+
   const handleApply = () => {
-    applyChanges();
-    setStatus("Changes applied to the main page preview.");
-    setTimeout(() => setStatus(""), 3000);
+    askConfirm(
+      "Apply changes?",
+      "Push the current edits to the public view.",
+      () => {
+        applyChanges();
+        setStatus("Changes applied to the main page preview.");
+        setTimeout(() => setStatus(""), 3000);
+      }
+    );
   };
 
   const handleAddService = () => {
@@ -215,20 +243,37 @@ export default function AdminDashboard() {
                         <div className="file-display" title={content.hero.image}>
                           {content.hero.image || "Upload image (.jpg, .png)"}
                         </div>
-                        <label className="file-btn">
-                          Upload
-                          <input
-                            type="file"
-                            accept="image/png, image/jpeg"
-                            hidden
-                            onChange={(e) =>
-                              handleSelectImage(
-                                e.target.files,
-                                (val) => updateHero({ image: val })
-                              )
-                            }
-                          />
-                        </label>
+                        <div className="file-actions">
+                          <label className="file-btn">
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/png, image/jpeg"
+                              hidden
+                              onChange={(e) =>
+                                handleSelectImage(
+                                  e.target.files,
+                                  (val) => updateHero({ image: val })
+                                )
+                              }
+                            />
+                          </label>
+                          {content.hero.image && (
+                            <button
+                              className="ghost-btn file-remove"
+                              type="button"
+                              onClick={() =>
+                                askConfirm(
+                                  "Remove hero image?",
+                                  "This will clear the hero image.",
+                                  () => updateHero({ image: "" })
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -279,20 +324,37 @@ export default function AdminDashboard() {
                         <div className="file-display" title={content.about.image}>
                           {content.about.image || "Upload image (.jpg, .png)"}
                         </div>
-                        <label className="file-btn">
-                          Upload
-                          <input
-                            type="file"
-                            accept="image/png, image/jpeg"
-                            hidden
-                            onChange={(e) =>
-                              handleSelectImage(
-                                e.target.files,
-                                (val) => updateAbout({ image: val })
-                              )
-                            }
-                          />
-                        </label>
+                        <div className="file-actions">
+                          <label className="file-btn">
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/png, image/jpeg"
+                              hidden
+                              onChange={(e) =>
+                                handleSelectImage(
+                                  e.target.files,
+                                  (val) => updateAbout({ image: val })
+                                )
+                              }
+                            />
+                          </label>
+                          {content.about.image && (
+                            <button
+                              className="ghost-btn file-remove"
+                              type="button"
+                              onClick={() =>
+                                askConfirm(
+                                  "Remove about image?",
+                                  "This will clear the about image.",
+                                  () => updateAbout({ image: "" })
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -350,20 +412,38 @@ export default function AdminDashboard() {
                             <div className="file-display" title={service.image}>
                               {service.image || "Upload image (.jpg, .png)"}
                             </div>
-                            <label className="file-btn">
-                              Upload
-                              <input
-                                type="file"
-                                accept="image/png, image/jpeg"
-                                hidden
-                                onChange={(e) =>
-                                  handleSelectImage(
-                                    e.target.files,
-                                    (val) => updateService(service.id, { image: val })
-                                  )
-                                }
-                              />
-                            </label>
+                            <div className="file-actions">
+                              <label className="file-btn">
+                                Upload
+                                <input
+                                  type="file"
+                                  accept="image/png, image/jpeg"
+                                  hidden
+                                  onChange={(e) =>
+                                    handleSelectImage(
+                                      e.target.files,
+                                      (val) =>
+                                        updateService(service.id, { image: val })
+                                    )
+                                  }
+                                />
+                              </label>
+                              {service.image && (
+                                <button
+                                  className="ghost-btn file-remove"
+                                  type="button"
+                                  onClick={() =>
+                                    askConfirm(
+                                      "Remove image?",
+                                      "This will clear the service image.",
+                                      () => updateService(service.id, { image: "" })
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="field-pair">
@@ -379,7 +459,13 @@ export default function AdminDashboard() {
                           <span className="chip">{service.category}</span>
                           <button
                             className="danger-btn"
-                            onClick={() => removeService(service.id)}
+                            onClick={() =>
+                              askConfirm(
+                                "Remove service?",
+                                "This will delete the service card from the homepage.",
+                                () => removeService(service.id)
+                              )
+                            }
                           >
                             Remove
                           </button>
@@ -391,46 +477,63 @@ export default function AdminDashboard() {
 
                 <div className="add-row">
                   <h3>Add Service</h3>
-                  <div className="inline-fields">
-                    <input
-                      placeholder="Title"
-                      value={newService.title}
-                      onChange={(e) =>
-                        setNewService((prev) => ({ ...prev, title: e.target.value }))
-                      }
-                    />
-                    <input
-                      placeholder="Category"
-                      value={newService.category}
-                      onChange={(e) =>
-                        setNewService((prev) => ({ ...prev, category: e.target.value }))
-                      }
-                    />
-                    <div className="file-field">
-                      <div
-                        className="file-display"
-                        title={newService.image || "Upload image"}
-                      >
-                        {newService.image
-                          ? newService.image
-                          : "Upload image (.jpg, .png)"}
+                    <div className="inline-fields">
+                      <input
+                        placeholder="Title"
+                        value={newService.title}
+                        onChange={(e) =>
+                          setNewService((prev) => ({ ...prev, title: e.target.value }))
+                        }
+                      />
+                      <input
+                        placeholder="Category"
+                        value={newService.category}
+                        onChange={(e) =>
+                          setNewService((prev) => ({ ...prev, category: e.target.value }))
+                        }
+                      />
+                      <div className="file-field">
+                        <div
+                          className="file-display"
+                          title={newService.image || "Upload image"}
+                        >
+                          {newService.image
+                            ? newService.image
+                            : "Upload image (.jpg, .png)"}
+                        </div>
+                        <div className="file-actions">
+                          <label className="file-btn">
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/png, image/jpeg"
+                              hidden
+                              onChange={(e) =>
+                                handleSelectImage(
+                                  e.target.files,
+                                  (val) => setNewService((prev) => ({ ...prev, image: val }))
+                                )
+                              }
+                            />
+                          </label>
+                          {newService.image && (
+                            <button
+                              className="ghost-btn file-remove"
+                              type="button"
+                              onClick={() =>
+                                askConfirm(
+                                  "Remove uploaded image?",
+                                  "This will clear the pending image.",
+                                  () => setNewService((prev) => ({ ...prev, image: "" }))
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <label className="file-btn">
-                        Upload
-                        <input
-                          type="file"
-                          accept="image/png, image/jpeg"
-                          hidden
-                          onChange={(e) =>
-                            handleSelectImage(
-                              e.target.files,
-                              (val) => setNewService((prev) => ({ ...prev, image: val }))
-                            )
-                          }
-                        />
-                      </label>
                     </div>
-                  </div>
               <textarea
                 placeholder="Description"
                 value={newService.description}
@@ -500,23 +603,43 @@ export default function AdminDashboard() {
                             <div className="file-display" title={item.image}>
                               {item.image || "Upload image (.jpg, .png)"}
                             </div>
-                            <label className="file-btn">
-                              Upload
-                              <input
-                                type="file"
-                                accept="image/png, image/jpeg"
-                                hidden
-                                onChange={(e) =>
-                                  handleSelectImage(
-                                    e.target.files,
-                                    (val) =>
-                                      updatePortfolioItem(activePortfolioTab, item.id, {
-                                        image: val,
-                                      })
-                                  )
-                                }
-                              />
-                            </label>
+                            <div className="file-actions">
+                              <label className="file-btn">
+                                Upload
+                                <input
+                                  type="file"
+                                  accept="image/png, image/jpeg"
+                                  hidden
+                                  onChange={(e) =>
+                                    handleSelectImage(
+                                      e.target.files,
+                                      (val) =>
+                                        updatePortfolioItem(activePortfolioTab, item.id, {
+                                          image: val,
+                                        })
+                                    )
+                                  }
+                                />
+                              </label>
+                              {item.image && (
+                                <button
+                                  className="ghost-btn file-remove"
+                                  type="button"
+                                  onClick={() =>
+                                    askConfirm(
+                                      "Remove image?",
+                                      "This will clear the portfolio image.",
+                                      () =>
+                                        updatePortfolioItem(activePortfolioTab, item.id, {
+                                          image: "",
+                                        })
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="field-pair">
@@ -534,7 +657,13 @@ export default function AdminDashboard() {
                           <span className="chip">#{activePortfolioTab}</span>
                           <button
                             className="danger-btn"
-                            onClick={() => removePortfolioItem(activePortfolioTab, item.id)}
+                            onClick={() =>
+                              askConfirm(
+                                "Remove portfolio item?",
+                                "This will delete the item from the portfolio carousel.",
+                                () => removePortfolioItem(activePortfolioTab, item.id)
+                              )
+                            }
                           >
                             Remove
                           </button>
@@ -566,24 +695,45 @@ export default function AdminDashboard() {
                           ? newPortfolioItem.image
                           : "Upload image (.jpg, .png)"}
                       </div>
-                      <label className="file-btn">
-                        Upload
-                        <input
-                          type="file"
-                          accept="image/png, image/jpeg"
-                          hidden
-                          onChange={(e) =>
-                            handleSelectImage(
-                              e.target.files,
-                              (val) =>
-                                setNewPortfolioItem((prev) => ({
-                                  ...prev,
-                                  image: val,
-                                }))
-                            )
-                          }
-                        />
-                      </label>
+                      <div className="file-actions">
+                        <label className="file-btn">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg"
+                            hidden
+                            onChange={(e) =>
+                              handleSelectImage(
+                                e.target.files,
+                                (val) =>
+                                  setNewPortfolioItem((prev) => ({
+                                    ...prev,
+                                    image: val,
+                                  }))
+                              )
+                            }
+                          />
+                        </label>
+                        {newPortfolioItem.image && (
+                          <button
+                            className="ghost-btn file-remove"
+                            type="button"
+                            onClick={() =>
+                              askConfirm(
+                                "Remove uploaded image?",
+                                "This will clear the pending image.",
+                                () =>
+                                  setNewPortfolioItem((prev) => ({
+                                    ...prev,
+                                    image: "",
+                                  }))
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
               <textarea
@@ -608,6 +758,16 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+      <ConfirmModal
+        open={confirmState.open}
+        title={confirmState.title}
+        message={confirmState.message}
+        onConfirm={() => {
+          confirmState.onConfirm();
+          closeConfirm();
+        }}
+        onCancel={closeConfirm}
+      />
     </div>
   );
 }
