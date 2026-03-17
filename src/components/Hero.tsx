@@ -1,10 +1,15 @@
 import "../styles/Hero.css";
+import { useContent } from "../context/ContentContext";
 
 type HeroProps = {
   onContactClick?: () => void;
 };
 
 export default function Hero({ onContactClick }: HeroProps) {
+  const {
+    content: { hero },
+  } = useContent();
+
   return (
     <section className="hero" id="home">
       <div className="hero-overlay"></div>
@@ -12,12 +17,12 @@ export default function Hero({ onContactClick }: HeroProps) {
       <div className="hero-container">
         <div className="hero-left">
           <h1>
-            WE DESIGN <br />
-            <span className="build-text">WE BUILD</span> <br />
-            <span className="print-text">WE PRINT</span>
+            {hero.line1} <br />
+            <span className="build-text">{hero.line2}</span> <br />
+            <span className="print-text">{hero.line3}</span>
           </h1>
 
-          <p>Your Vision is Our Mission</p>
+          <p>{hero.subtext}</p>
 
           <div className="hero-buttons">
             <button className="hero-brand-btn hero-btn-works">
@@ -35,7 +40,7 @@ export default function Hero({ onContactClick }: HeroProps) {
         </div>
 
         <div className="hero-right">
-          <img src="/logo-large.png" alt="Leyarss Creatives Logo" />
+          <img src={hero.image} alt="Leyarss Creatives Logo" />
         </div>
       </div>
     </section>

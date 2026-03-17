@@ -1,50 +1,9 @@
+import { useContent } from "../context/ContentContext";
 import "../styles/Services.css";
 
 export default function Services() {
-  const servicesData = [
-    {
-      id: 1,
-      title: "Brand Identity Design",
-      category: "Branding",
-      image: "/service-1.jpg",
-      description: "Create a distinctive brand identity that stands out in the market.",
-    },
-    {
-      id: 2,
-      title: "Digital Design & UX",
-      category: "Digital",
-      image: "/service-2.jpg",
-      description: "Modern, user-centric digital designs for web and mobile platforms.",
-    },
-    {
-      id: 3,
-      title: "Print & Packaging",
-      category: "Print",
-      image: "/service-3.jpg",
-      description: "Professional print design solutions including packaging and marketing materials.",
-    },
-    {
-      id: 4,
-      title: "Event Branding",
-      category: "Events",
-      image: "/service-4.jpg",
-      description: "Complete branding solutions for corporate events and special occasions.",
-    },
-    {
-      id: 5,
-      title: "Marketing Materials",
-      category: "Marketing",
-      image: "/service-5.jpg",
-      description: "Engaging marketing collateral that drives brand awareness and conversions.",
-    },
-    {
-      id: 6,
-      title: "Consultation & Strategy",
-      category: "Consulting",
-      image: "/service-6.jpg",
-      description: "Expert guidance on brand strategy and creative direction for your projects.",
-    },
-  ];
+  const { content } = useContent();
+  const servicesData = content.services;
 
   return (
     <section className="services" id="services">
