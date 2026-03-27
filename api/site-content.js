@@ -1,7 +1,7 @@
-import { get as edgeGet, put as edgePut } from "@vercel/edge-config";
+import { createClient } from "@supabase/supabase-js";
 
-const PRIMARY_CONTENT_KEY = "site-content";
-const LEGACY_CONTENT_KEY = "site_content";
+const CONTENT_ROW_ID = 1;
+const SUPABASE_CONTENT_TABLE = process.env.SUPABASE_CONTENT_TABLE || "site_content";
 
 const defaultContent = {
   hero: {
@@ -119,91 +119,23 @@ function normalizeContent(input) {
   };
 }
 
-function parseJsonSafely(text) {
-  if (!text) {
-    return null;
-  }
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || "";
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { raw: text };
-  }
-}
-
-function parseEdgeConfigIdFromConnectionString() {
-  const conn = process.env.EDGE_CONFIG;
-  if (!conn || typeof conn !== "string") {
-    return "";
-  }
-
-  try {
-    const parsed = new URL(conn);
-    const path = parsed.pathname.replace(/^\/+/, "");
-    return path || "";
-  } catch {
-    return "";
-  }
-}
-
-function getWriteEnv() {
-  const token = process.env.VERCEL_TOKEN || process.env.VERCEL_API_TOKEN || "";
-  const edgeConfigId = process.env.EDGE_CONFIG_ID;
-  const parsedEdgeConfigId = parseEdgeConfigIdFromConnectionString();
-  const finalEdgeConfigId = edgeConfigId || parsedEdgeConfigId;
-
-  if (!token || !finalEdgeConfigId) {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
     const missing = [];
-    if (!token) missing.push("VERCEL_TOKEN");
-    if (!finalEdgeConfigId) missing.push("EDGE_CONFIG_ID (or parseable EDGE_CONFIG)");
+    if (!supabaseUrl) missing.push("SUPABASE_URL");
+    if (!supabaseServiceRoleKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
 
-  return { token, edgeConfigId: finalEdgeConfigId };
-}
-
-async function callVercelApi({ token, edgeConfigId, method, key, body }) {
-  const url = `https://api.vercel.com/v1/edge-config/${edgeConfigId}/items${
-    key ? `?key=${encodeURIComponent(key)}` : ""
-  }`;
-
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
     },
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
   });
-
-  const text = await response.text();
-  const payload = parseJsonSafely(text);
-
-  if (!response.ok) {
-    throw new Error(
-      `Vercel API ${method} failed (${response.status}): ${JSON.stringify(payload)}`
-    );
-  }
-
-  return payload;
-}
-
-function extractEdgeConfigValue(payload, key) {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-
-  if (Array.isArray(payload.items)) {
-    const found = payload.items.find((item) => item?.key === key);
-    return found?.value ?? null;
-  }
-
-  if (payload.key === key && "value" in payload) {
-    return payload.value;
-  }
-
-  return null;
 }
 
 export default async function handler(req, res) {
@@ -211,40 +143,18 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      let value = null;
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(SUPABASE_CONTENT_TABLE)
+        .select("content")
+        .eq("id", CONTENT_ROW_ID)
+        .maybeSingle();
 
-      // Prefer REST call when write env exists; fallback to Edge Config SDK read.
-      try {
-        const { token, edgeConfigId } = getWriteEnv();
-
-        const primaryPayload = await callVercelApi({
-          token,
-          edgeConfigId,
-          method: "GET",
-          key: PRIMARY_CONTENT_KEY,
-        });
-        value = extractEdgeConfigValue(primaryPayload, PRIMARY_CONTENT_KEY);
-
-        if (!value) {
-          const legacyPayload = await callVercelApi({
-            token,
-            edgeConfigId,
-            method: "GET",
-            key: LEGACY_CONTENT_KEY,
-          });
-          value = extractEdgeConfigValue(legacyPayload, LEGACY_CONTENT_KEY);
-        }
-      } catch (restReadError) {
-        console.warn("[site-content][GET] REST read failed, using SDK fallback", {
-          trace,
-          message:
-            restReadError instanceof Error
-              ? restReadError.message
-              : String(restReadError),
-        });
-
-        value = (await edgeGet(PRIMARY_CONTENT_KEY)) || (await edgeGet(LEGACY_CONTENT_KEY));
+      if (error) {
+        throw new Error(`Supabase read failed: ${error.message}`);
       }
+
+      const value = data?.content || null;
 
       return res.status(200).json(normalizeContent(value));
     }
@@ -260,55 +170,25 @@ export default async function handler(req, res) {
 
       const content = normalizeContent(body);
 
-      let restWriteError = null;
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.from(SUPABASE_CONTENT_TABLE).upsert(
+        {
+          id: CONTENT_ROW_ID,
+          content,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
 
-      try {
-        const { token, edgeConfigId } = getWriteEnv();
-        await callVercelApi({
-          token,
-          edgeConfigId,
-          method: "PATCH",
-          body: {
-            items: [
-              {
-                operation: "upsert",
-                key: PRIMARY_CONTENT_KEY,
-                value: content,
-              },
-            ],
-          },
-        });
-      } catch (error) {
-        restWriteError = error;
-        console.warn("[site-content][POST] REST write failed, trying SDK fallback", {
+      if (error) {
+        return res.status(500).json({
+          error: "Failed to write site content to Supabase.",
+          code: "WRITE_FAILED",
           trace,
-          message: error instanceof Error ? error.message : String(error),
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
         });
-
-        try {
-          await edgePut(PRIMARY_CONTENT_KEY, content);
-        } catch (sdkError) {
-          const restMessage =
-            restWriteError instanceof Error
-              ? restWriteError.message
-              : String(restWriteError);
-          const sdkMessage =
-            sdkError instanceof Error ? sdkError.message : String(sdkError);
-
-          console.error("[site-content][POST] both write methods failed", {
-            trace,
-            restMessage,
-            sdkMessage,
-          });
-
-          return res.status(500).json({
-            error: "Failed to write site content to Edge Config.",
-            code: "WRITE_FAILED",
-            trace,
-            restMessage,
-            sdkMessage,
-          });
-        }
       }
 
       console.log("[site-content][POST] Updated successfully", { trace });
