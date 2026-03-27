@@ -259,31 +259,16 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       try {
-        const [heroRes, aboutRes, servicesRes, ...portfolioResArr] = await Promise.all([
-          fetch("/api/content/hero"),
-          fetch("/api/content/about"),
-          fetch("/api/content/services"),
-          ...(["brand", "event", "print", "product"] as TabKey[]).map(cat => fetch(`/api/content/portfolio/${cat}`)),
-        ]);
-        const hero = (await heroRes.json()).hero;
-        const about = (await aboutRes.json()).about;
-        const services = await servicesRes.json();
-        const portfolio: Record<TabKey, PortfolioCategory> = {
-          brand: { ...defaultContent.portfolio.brand, items: [] },
-          event: { ...defaultContent.portfolio.event, items: [] },
-          print: { ...defaultContent.portfolio.print, items: [] },
-          product: { ...defaultContent.portfolio.product, items: [] },
-        };
-        const cats: TabKey[] = ["brand", "event", "print", "product"];
-        for (let i = 0; i < cats.length; i++) {
-          const items = (await portfolioResArr[i].json()) as PortfolioItem[];
-          portfolio[cats[i]] = {
-            title: defaultContent.portfolio[cats[i]].title,
-            description: defaultContent.portfolio[cats[i]].description,
-            items,
-          };
+        const response = await fetch("/api/site-content", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load content");
         }
-        const loaded: ContentState = { hero, about, services, portfolio };
+
+        const loaded = (await response.json()) as ContentState;
         setPublishedContent(loaded);
         setDraftContent(loaded);
       } catch {
@@ -299,23 +284,16 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     setSaving(true);
     setError(null);
     try {
-      // Save hero and about
-      await Promise.all([
-        fetch("/api/content/hero", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draftContent.hero) }),
-        fetch("/api/content/about", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draftContent.about) }),
-      ]);
-      // Save services
-      await Promise.all(draftContent.services.map(service =>
-        fetch(`/api/content/services/${service.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(service) })
-      ));
-      // Save portfolio
-      await Promise.all(
-        (Object.keys(draftContent.portfolio) as TabKey[]).flatMap(cat =>
-          draftContent.portfolio[cat].items.map(item =>
-            fetch(`/api/content/portfolio/${cat}/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) })
-          )
-        )
-      );
+      const response = await fetch("/api/site-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draftContent),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save content");
+      }
+
       setPublishedContent(draftContent);
     } catch (err) {
       setError("Failed to save changes.");
