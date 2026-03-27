@@ -82,8 +82,12 @@ export default function AdminDashboard() {
         try {
           await applyChanges();
           setStatus("Changes applied to the main page preview.");
-        } catch {
-          setStatus("Failed to apply changes. Please try again.");
+        } catch (saveError) {
+          const message =
+            saveError instanceof Error
+              ? saveError.message
+              : "Failed to apply changes. Please try again.";
+          setStatus(message);
         }
         setTimeout(() => setStatus(""), 3000);
       }

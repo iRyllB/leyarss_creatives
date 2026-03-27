@@ -1,4 +1,4 @@
-import { get as edgeGet } from "@vercel/edge-config";
+import { get as edgeGet, put as edgePut } from "@vercel/edge-config";
 
 const PRIMARY_CONTENT_KEY = "site-content";
 const LEGACY_CONTENT_KEY = "site_content";
@@ -250,25 +250,6 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      let token = "";
-      let edgeConfigId = "";
-
-      try {
-        const env = getWriteEnv();
-        token = env.token;
-        edgeConfigId = env.edgeConfigId;
-      } catch (configError) {
-        console.error("[site-content][POST] missing config", {
-          trace,
-          message: configError instanceof Error ? configError.message : String(configError),
-        });
-        return res.status(500).json({
-          error: "Server config missing for Edge Config write.",
-          code: "CONFIG_MISSING",
-          trace,
-        });
-      }
-
       let body;
 
       try {
@@ -279,20 +260,56 @@ export default async function handler(req, res) {
 
       const content = normalizeContent(body);
 
-      await callVercelApi({
-        token,
-        edgeConfigId,
-        method: "PATCH",
-        body: {
-          items: [
-            {
-              operation: "upsert",
-              key: PRIMARY_CONTENT_KEY,
-              value: content,
-            },
-          ],
-        },
-      });
+      let restWriteError = null;
+
+      try {
+        const { token, edgeConfigId } = getWriteEnv();
+        await callVercelApi({
+          token,
+          edgeConfigId,
+          method: "PATCH",
+          body: {
+            items: [
+              {
+                operation: "upsert",
+                key: PRIMARY_CONTENT_KEY,
+                value: content,
+              },
+            ],
+          },
+        });
+      } catch (error) {
+        restWriteError = error;
+        console.warn("[site-content][POST] REST write failed, trying SDK fallback", {
+          trace,
+          message: error instanceof Error ? error.message : String(error),
+        });
+
+        try {
+          await edgePut(PRIMARY_CONTENT_KEY, content);
+        } catch (sdkError) {
+          const restMessage =
+            restWriteError instanceof Error
+              ? restWriteError.message
+              : String(restWriteError);
+          const sdkMessage =
+            sdkError instanceof Error ? sdkError.message : String(sdkError);
+
+          console.error("[site-content][POST] both write methods failed", {
+            trace,
+            restMessage,
+            sdkMessage,
+          });
+
+          return res.status(500).json({
+            error: "Failed to write site content to Edge Config.",
+            code: "WRITE_FAILED",
+            trace,
+            restMessage,
+            sdkMessage,
+          });
+        }
+      }
 
       console.log("[site-content][POST] Updated successfully", { trace });
 
@@ -311,6 +328,7 @@ export default async function handler(req, res) {
       error: "Site content API failed.",
       code: "SITE_CONTENT_API_FAILED",
       trace,
+      message: error instanceof Error ? error.message : String(error),
     });
   }
 }
