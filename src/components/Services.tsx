@@ -1,12 +1,44 @@
+import { useEffect, useRef } from "react";
 import { useContent } from "../context/ContentContext";
 import "../styles/Services.css";
 
 export default function Services() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const targets = Array.from(
+      section.querySelectorAll<HTMLElement>(".service-card")
+    );
+    if (targets.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -8% 0px",
+      }
+    );
+
+    targets.forEach((target) => observer.observe(target));
+
+    return () => observer.disconnect();
+  }, []);
+
   const { publishedContent } = useContent();
   const servicesData = publishedContent.services;
 
   return (
-    <section className="services" id="services">
+    <section className="services" id="services" ref={sectionRef}>
       <div className="services-container">
         <div className="services-header">
           <h2>Our Services</h2>

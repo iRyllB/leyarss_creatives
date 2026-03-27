@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   type TabKey,
   type PortfolioItem,
@@ -10,6 +10,7 @@ export default function Portfolio() {
   const { publishedContent } = useContent();
   const [activeTab, setActiveTab] = useState<TabKey>("brand");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const sectionRef = useRef<HTMLElement | null>(null);
 
   const portfolioData = publishedContent.portfolio;
   const orderedKeys: TabKey[] = ["brand", "event", "print", "product"];
@@ -42,8 +43,37 @@ export default function Portfolio() {
     currentIndex + itemsPerView
   );
 
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const targets = Array.from(
+      section.querySelectorAll<HTMLElement>(".portfolio-slider-item")
+    );
+    if (targets.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -8% 0px",
+      }
+    );
+
+    targets.forEach((target) => observer.observe(target));
+
+    return () => observer.disconnect();
+  }, [activeTab, currentIndex]);
+
   return (
-    <section className="portfolio-slider" id="portfolio">
+    <section className="portfolio-slider" id="portfolio" ref={sectionRef}>
       <div className="portfolio-slider-container">
         <div className="portfolio-slider-header">
           <h2>Our Portfolio</h2>
