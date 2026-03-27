@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  type TabKey,
   type Service,
+  type TabKey,
   type PortfolioItem,
   useContent,
 } from "../context/ContentContext";
@@ -14,36 +14,24 @@ type SectionKey = "hero" | "about" | "services" | "portfolio";
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const {
-    content,
-    addService,
-    updateService,
-    removeService,
-    addPortfolioItem,
-    updatePortfolioItem,
-    removePortfolioItem,
-    updateHero,
-    updateAbout,
+    draftContent,
+    setDraftContent,
+    loading,
+    saving,
+    error,
     applyChanges,
   } = useContent();
 
   const [activeSection, setActiveSection] = useState<SectionKey>("hero");
   const [activePortfolioTab, setActivePortfolioTab] = useState<TabKey>("brand");
   const [status, setStatus] = useState("");
-
   const [newService, setNewService] = useState<Omit<Service, "id">>({
     title: "",
     category: "",
     image: "",
     description: "",
   });
-
-  const [newPortfolioItem, setNewPortfolioItem] = useState<
-    Omit<PortfolioItem, "id">
-  >({
-    title: "",
-    image: "",
-    details: "",
-  });
+  const [newPortfolioItem, setNewPortfolioItem] = useState<Omit<PortfolioItem, "id">>({ title: "", image: "", details: "" });
 
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
@@ -82,18 +70,17 @@ export default function AdminDashboard() {
     askConfirm(
       "Apply changes?",
       "Push the current edits to the public view.",
-      () => {
-        applyChanges();
-        setStatus("Changes applied to the main page preview.");
+      async () => {
+        setStatus("");
+        try {
+          await applyChanges();
+          setStatus("Changes applied to the main page preview.");
+        } catch {
+          setStatus("Failed to apply changes. Please try again.");
+        }
         setTimeout(() => setStatus(""), 3000);
       }
     );
-  };
-
-  const handleAddService = () => {
-    if (!newService.title || !newService.category) return;
-    addService(newService);
-    setNewService({ title: "", category: "", image: "", description: "" });
   };
 
   const handleSelectImage = (
@@ -108,13 +95,114 @@ export default function AdminDashboard() {
     setter(url);
   };
 
+  const handleAddService = () => {
+    if (!newService.title.trim() || !newService.category.trim()) {
+      return;
+    }
+
+    const newEntry: Service = {
+      id: `srv-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      title: newService.title,
+      category: newService.category,
+      image: newService.image,
+      description: newService.description,
+    };
+
+    setDraftContent((draft) => ({
+      ...draft,
+      services: [...draft.services, newEntry],
+    }));
+
+    setNewService({
+      title: "",
+      category: "",
+      image: "",
+      description: "",
+    });
+  };
+
+  const updateServiceField = <K extends keyof Service>(
+    index: number,
+    field: K,
+    value: Service[K]
+  ) => {
+    setDraftContent((draft) => {
+      const services = [...draft.services];
+      services[index] = { ...services[index], [field]: value };
+      return { ...draft, services };
+    });
+  };
+
+  const removeServiceById = (serviceId: string) => {
+    setDraftContent((draft) => ({
+      ...draft,
+      services: draft.services.filter((service) => service.id !== serviceId),
+    }));
+  };
+
   const handleAddPortfolioItem = () => {
-    if (!newPortfolioItem.title || !newPortfolioItem.image) return;
-    addPortfolioItem(activePortfolioTab, newPortfolioItem);
+    if (!newPortfolioItem.title || !newPortfolioItem.image) {
+      return;
+    }
+
+    setDraftContent((draft) => {
+      const currentItems = draft.portfolio[activePortfolioTab].items;
+      const newItem: PortfolioItem = {
+        id: `pf-${Date.now()}`,
+        title: newPortfolioItem.title,
+        image: newPortfolioItem.image,
+        details: newPortfolioItem.details,
+      };
+
+      return {
+        ...draft,
+        portfolio: {
+          ...draft.portfolio,
+          [activePortfolioTab]: {
+            ...draft.portfolio[activePortfolioTab],
+            items: [...currentItems, newItem],
+          },
+        },
+      };
+    });
+
     setNewPortfolioItem({ title: "", image: "", details: "" });
   };
 
-  const currentCategory = content.portfolio[activePortfolioTab];
+  const updatePortfolioItem = <K extends keyof PortfolioItem>(
+    category: TabKey,
+    itemId: string,
+    field: K,
+    value: PortfolioItem[K]
+  ) => {
+    setDraftContent((draft) => ({
+      ...draft,
+      portfolio: {
+        ...draft.portfolio,
+        [category]: {
+          ...draft.portfolio[category],
+          items: draft.portfolio[category].items.map((item) =>
+            item.id === itemId ? { ...item, [field]: value } : item
+          ),
+        },
+      },
+    }));
+  };
+
+  const removePortfolioItem = (category: TabKey, itemId: string) => {
+    setDraftContent((draft) => ({
+      ...draft,
+      portfolio: {
+        ...draft.portfolio,
+        [category]: {
+          ...draft.portfolio[category],
+          items: draft.portfolio[category].items.filter((item) => item.id !== itemId),
+        },
+      },
+    }));
+  };
+
+  const currentCategory = draftContent.portfolio[activePortfolioTab];
 
   const sectionNav = useMemo(
     () => [
@@ -179,6 +267,9 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        {loading && <div className="status-banner">Loading content...</div>}
+        {saving && <div className="status-banner">Saving changes...</div>}
+        {error && <div className="status-banner error">{error}</div>}
         {status && <div className="status-banner">{status}</div>}
 
         <div className="page-map">
@@ -195,15 +286,15 @@ export default function AdminDashboard() {
                     <div className="preview-body">
                       <p className="preview-tag">High velocity studio</p>
                       <h1 className="hero-preview-text">
-                        {content.hero.line1} <br />
-                        <span className="build-text">{content.hero.line2}</span> <br />
-                        <span className="print-text">{content.hero.line3}</span>
+                        {draftContent.hero.line1} <br />
+                        <span className="build-text">{draftContent.hero.line2}</span> <br />
+                        <span className="print-text">{draftContent.hero.line3}</span>
                       </h1>
-                      <p className="preview-desc">{content.hero.subtext}</p>
+                      <p className="preview-desc">{draftContent.hero.subtext}</p>
                     </div>
-                    {content.hero.image && (
+                    {draftContent.hero.image && (
                       <div className="preview-img hero-image">
-                        <img src={content.hero.image} alt="Hero visual" />
+                        <img src={draftContent.hero.image} alt="Hero visual" />
                       </div>
                     )}
                   </div>
@@ -212,36 +303,36 @@ export default function AdminDashboard() {
                     <div className="field-pair">
                       <label>Line 1</label>
                       <input
-                        value={content.hero.line1}
-                        onChange={(e) => updateHero({ line1: e.target.value })}
+                        value={draftContent.hero.line1}
+                        onChange={(e) => setDraftContent(draft => ({ ...draft, hero: { ...draft.hero, line1: e.target.value } }))}
                       />
                     </div>
                     <div className="field-pair">
                       <label>Line 2</label>
                       <input
-                        value={content.hero.line2}
-                        onChange={(e) => updateHero({ line2: e.target.value })}
+                        value={draftContent.hero.line2}
+                        onChange={(e) => setDraftContent(draft => ({ ...draft, hero: { ...draft.hero, line2: e.target.value } }))}
                       />
                     </div>
                     <div className="field-pair">
                       <label>Line 3</label>
                       <input
-                        value={content.hero.line3}
-                        onChange={(e) => updateHero({ line3: e.target.value })}
+                        value={draftContent.hero.line3}
+                        onChange={(e) => setDraftContent(draft => ({ ...draft, hero: { ...draft.hero, line3: e.target.value } }))}
                       />
                     </div>
                     <div className="field-pair">
                       <label>Subtext</label>
                       <textarea
-                        value={content.hero.subtext}
-                        onChange={(e) => updateHero({ subtext: e.target.value })}
+                        value={draftContent.hero.subtext}
+                        onChange={(e) => setDraftContent(draft => ({ ...draft, hero: { ...draft.hero, subtext: e.target.value } }))}
                       />
                     </div>
                     <div className="field-pair">
                       <label>Image</label>
                       <div className="file-field">
-                        <div className="file-display" title={content.hero.image}>
-                          {content.hero.image || "Upload image (.jpg, .png)"}
+                        <div className="file-display" title={draftContent.hero.image}>
+                          {draftContent.hero.image || "Upload image (.jpg, .png)"}
                         </div>
                         <div className="file-actions">
                           <label className="file-btn">
@@ -253,12 +344,12 @@ export default function AdminDashboard() {
                               onChange={(e) =>
                                 handleSelectImage(
                                   e.target.files,
-                                  (val) => updateHero({ image: val })
+                                  (val) => setDraftContent(draft => ({ ...draft, hero: { ...draft.hero, image: val } }))
                                 )
                               }
                             />
                           </label>
-                          {content.hero.image && (
+                          {draftContent.hero.image && (
                             <button
                               className="ghost-btn file-remove"
                               type="button"
@@ -266,7 +357,7 @@ export default function AdminDashboard() {
                                 askConfirm(
                                   "Remove hero image?",
                                   "This will clear the hero image.",
-                                  () => updateHero({ image: "" })
+                                  () => setDraftContent(draft => ({ ...draft, hero: { ...draft.hero, image: "" } }))
                                 )
                               }
                             >
@@ -292,37 +383,37 @@ export default function AdminDashboard() {
               <div className="panel">
                 <div className="dual-card">
                   <div className="preview-card">
-                    {content.about.image && (
+                    {draftContent.about.image && (
                       <div className="preview-img">
-                        <img src={content.about.image} alt="About preview" />
+                        <img src={draftContent.about.image} alt="About preview" />
                       </div>
                     )}
                     <div className="preview-body">
                       <p className="preview-tag">Legacy & Energy</p>
-                      <h4>{content.about.title}</h4>
-                      <p className="preview-desc">{content.about.body}</p>
+                      <h4>{draftContent.about.title}</h4>
+                      <p className="preview-desc">{draftContent.about.body}</p>
                     </div>
                   </div>
                   <div className="edit-card">
                     <div className="field-pair">
                       <label>Title</label>
                       <input
-                        value={content.about.title}
-                        onChange={(e) => updateAbout({ title: e.target.value })}
+                        value={draftContent.about.title}
+                        onChange={(e) => setDraftContent(draft => ({ ...draft, about: { ...draft.about, title: e.target.value } }))}
                       />
                     </div>
                     <div className="field-pair">
                       <label>Body</label>
                       <textarea
-                        value={content.about.body}
-                        onChange={(e) => updateAbout({ body: e.target.value })}
+                        value={draftContent.about.body}
+                        onChange={(e) => setDraftContent(draft => ({ ...draft, about: { ...draft.about, body: e.target.value } }))}
                       />
                     </div>
                     <div className="field-pair">
                       <label>Image</label>
                       <div className="file-field">
-                        <div className="file-display" title={content.about.image}>
-                          {content.about.image || "Upload image (.jpg, .png)"}
+                        <div className="file-display" title={draftContent.about.image}>
+                          {draftContent.about.image || "Upload image (.jpg, .png)"}
                         </div>
                         <div className="file-actions">
                           <label className="file-btn">
@@ -334,12 +425,12 @@ export default function AdminDashboard() {
                               onChange={(e) =>
                                 handleSelectImage(
                                   e.target.files,
-                                  (val) => updateAbout({ image: val })
+                                  (val) => setDraftContent(draft => ({ ...draft, about: { ...draft.about, image: val } }))
                                 )
                               }
                             />
                           </label>
-                          {content.about.image && (
+                          {draftContent.about.image && (
                             <button
                               className="ghost-btn file-remove"
                               type="button"
@@ -347,7 +438,7 @@ export default function AdminDashboard() {
                                 askConfirm(
                                   "Remove about image?",
                                   "This will clear the about image.",
-                                  () => updateAbout({ image: "" })
+                                  () => setDraftContent(draft => ({ ...draft, about: { ...draft.about, image: "" } }))
                                 )
                               }
                             >
@@ -372,7 +463,7 @@ export default function AdminDashboard() {
               </div>
               <div className="panel">
                 <div className="editable-list">
-                  {content.services.map((service) => (
+                  {draftContent.services.map((service, idx) => (
                     <div className="dual-card" key={service.id}>
                       <div className="preview-card">
                         {service.image && (
@@ -392,18 +483,14 @@ export default function AdminDashboard() {
                           <label>Title</label>
                           <input
                             value={service.title}
-                            onChange={(e) =>
-                              updateService(service.id, { title: e.target.value })
-                            }
+                            onChange={(e) => updateServiceField(idx, "title", e.target.value)}
                           />
                         </div>
                         <div className="field-pair">
                           <label>Category</label>
                           <input
                             value={service.category}
-                            onChange={(e) =>
-                              updateService(service.id, { category: e.target.value })
-                            }
+                            onChange={(e) => updateServiceField(idx, "category", e.target.value)}
                           />
                         </div>
                         <div className="field-pair">
@@ -419,13 +506,10 @@ export default function AdminDashboard() {
                                   type="file"
                                   accept="image/png, image/jpeg"
                                   hidden
-                                  onChange={(e) =>
-                                    handleSelectImage(
-                                      e.target.files,
-                                      (val) =>
-                                        updateService(service.id, { image: val })
-                                    )
-                                  }
+                                  onChange={(e) => handleSelectImage(
+                                    e.target.files,
+                                    (val) => updateServiceField(idx, "image", val)
+                                  )}
                                 />
                               </label>
                               {service.image && (
@@ -436,7 +520,7 @@ export default function AdminDashboard() {
                                     askConfirm(
                                       "Remove image?",
                                       "This will clear the service image.",
-                                      () => updateService(service.id, { image: "" })
+                                      () => updateServiceField(idx, "image", "")
                                     )
                                   }
                                 >
@@ -450,9 +534,7 @@ export default function AdminDashboard() {
                           <label>Caption</label>
                           <textarea
                             value={service.description}
-                            onChange={(e) =>
-                              updateService(service.id, { description: e.target.value })
-                            }
+                            onChange={(e) => updateServiceField(idx, "description", e.target.value)}
                           />
                         </div>
                         <div className="card-actions">
@@ -463,7 +545,7 @@ export default function AdminDashboard() {
                               askConfirm(
                                 "Remove service?",
                                 "This will delete the service card from the homepage.",
-                                () => removeService(service.id)
+                                () => removeServiceById(service.id)
                               )
                             }
                           >
@@ -477,70 +559,67 @@ export default function AdminDashboard() {
 
                 <div className="add-row">
                   <h3>Add Service</h3>
-                    <div className="inline-fields">
-                      <input
-                        placeholder="Title"
-                        value={newService.title}
-                        onChange={(e) =>
-                          setNewService((prev) => ({ ...prev, title: e.target.value }))
-                        }
-                      />
-                      <input
-                        placeholder="Category"
-                        value={newService.category}
-                        onChange={(e) =>
-                          setNewService((prev) => ({ ...prev, category: e.target.value }))
-                        }
-                      />
-                      <div className="file-field">
-                        <div
-                          className="file-display"
-                          title={newService.image || "Upload image"}
-                        >
-                          {newService.image
-                            ? newService.image
-                            : "Upload image (.jpg, .png)"}
-                        </div>
-                        <div className="file-actions">
-                          <label className="file-btn">
-                            Upload
-                            <input
-                              type="file"
-                              accept="image/png, image/jpeg"
-                              hidden
-                              onChange={(e) =>
-                                handleSelectImage(
-                                  e.target.files,
-                                  (val) => setNewService((prev) => ({ ...prev, image: val }))
-                                )
-                              }
-                            />
-                          </label>
-                          {newService.image && (
-                            <button
-                              className="ghost-btn file-remove"
-                              type="button"
-                              onClick={() =>
-                                askConfirm(
-                                  "Remove uploaded image?",
-                                  "This will clear the pending image.",
-                                  () => setNewService((prev) => ({ ...prev, image: "" }))
-                                )
-                              }
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
+                  <div className="inline-fields">
+                    <input
+                      placeholder="Title"
+                      value={newService.title}
+                      onChange={(e) =>
+                        setNewService((prev) => ({ ...prev, title: e.target.value }))
+                      }
+                    />
+                    <input
+                      placeholder="Category"
+                      value={newService.category}
+                      onChange={(e) =>
+                        setNewService((prev) => ({ ...prev, category: e.target.value }))
+                      }
+                    />
+                    <div className="file-field">
+                      <div className="file-display" title={newService.image || "Upload image"}>
+                        {newService.image ? newService.image : "Upload image (.jpg, .png)"}
+                      </div>
+                      <div className="file-actions">
+                        <label className="file-btn">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg"
+                            hidden
+                            onChange={(e) =>
+                              handleSelectImage(
+                                e.target.files,
+                                (val) => setNewService((prev) => ({ ...prev, image: val }))
+                              )
+                            }
+                          />
+                        </label>
+                        {newService.image && (
+                          <button
+                            className="ghost-btn file-remove"
+                            type="button"
+                            onClick={() =>
+                              askConfirm(
+                                "Remove uploaded image?",
+                                "This will clear the pending image.",
+                                () => setNewService((prev) => ({ ...prev, image: "" }))
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
                     </div>
-              <textarea
-                placeholder="Description"
-                value={newService.description}
-                onChange={(e) =>
+                  </div>
+
+                  <textarea
+                    placeholder="Description"
+                    value={newService.description}
+                    onChange={(e) =>
                       setNewService((prev) => ({ ...prev, description: e.target.value }))
                     }
                   />
+
                   <button className="primary-btn small" onClick={handleAddService}>
                     Add service
                   </button>
@@ -564,7 +643,7 @@ export default function AdminDashboard() {
                       className={`pill ${activePortfolioTab === tab ? "active" : ""}`}
                       onClick={() => setActivePortfolioTab(tab)}
                     >
-                      {content.portfolio[tab].title}
+                      {draftContent.portfolio[tab].title}
                     </button>
                   ))}
                 </div>
@@ -591,9 +670,7 @@ export default function AdminDashboard() {
                           <input
                             value={item.title}
                             onChange={(e) =>
-                              updatePortfolioItem(activePortfolioTab, item.id, {
-                                title: e.target.value,
-                              })
+                              updatePortfolioItem(activePortfolioTab, item.id, "title", e.target.value)
                             }
                           />
                         </div>
@@ -614,9 +691,12 @@ export default function AdminDashboard() {
                                     handleSelectImage(
                                       e.target.files,
                                       (val) =>
-                                        updatePortfolioItem(activePortfolioTab, item.id, {
-                                          image: val,
-                                        })
+                                        updatePortfolioItem(
+                                          activePortfolioTab,
+                                          item.id,
+                                          "image",
+                                          val
+                                        )
                                     )
                                   }
                                 />
@@ -630,9 +710,12 @@ export default function AdminDashboard() {
                                       "Remove image?",
                                       "This will clear the portfolio image.",
                                       () =>
-                                        updatePortfolioItem(activePortfolioTab, item.id, {
-                                          image: "",
-                                        })
+                                        updatePortfolioItem(
+                                          activePortfolioTab,
+                                          item.id,
+                                          "image",
+                                          ""
+                                        )
                                     )
                                   }
                                 >
@@ -647,9 +730,12 @@ export default function AdminDashboard() {
                           <textarea
                             value={item.details}
                             onChange={(e) =>
-                              updatePortfolioItem(activePortfolioTab, item.id, {
-                                details: e.target.value,
-                              })
+                              updatePortfolioItem(
+                                activePortfolioTab,
+                                item.id,
+                                "details",
+                                e.target.value
+                              )
                             }
                           />
                         </div>
@@ -736,10 +822,10 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-              <textarea
-                placeholder="Caption / details"
-                value={newPortfolioItem.details}
-                onChange={(e) =>
+                  <textarea
+                    placeholder="Caption / details"
+                    value={newPortfolioItem.details}
+                    onChange={(e) =>
                       setNewPortfolioItem((prev) => ({
                         ...prev,
                         details: e.target.value,
@@ -750,7 +836,7 @@ export default function AdminDashboard() {
                     className="primary-btn small"
                     onClick={handleAddPortfolioItem}
                   >
-                    Add item to {content.portfolio[activePortfolioTab].title}
+                    Add item to {draftContent.portfolio[activePortfolioTab].title}
                   </button>
                 </div>
               </div>

@@ -1,8 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -52,20 +53,14 @@ type ContentState = {
 };
 
 type ContentContextValue = {
-  content: ContentState;
-  updateHero: (data: Partial<HeroContent>) => void;
-  updateAbout: (data: Partial<AboutContent>) => void;
-  addService: (service: Omit<Service, "id">) => void;
-  updateService: (id: string, data: Partial<Service>) => void;
-  removeService: (id: string) => void;
-  addPortfolioItem: (category: TabKey, item: Omit<PortfolioItem, "id">) => void;
-  updatePortfolioItem: (
-    category: TabKey,
-    id: string,
-    data: Partial<PortfolioItem>
-  ) => void;
-  removePortfolioItem: (category: TabKey, id: string) => void;
-  applyChanges: () => void;
+  publishedContent: ContentState;
+  draftContent: ContentState;
+  setDraftContent: React.Dispatch<React.SetStateAction<ContentState>>;
+  loading: boolean;
+  saving: boolean;
+  error: string | null;
+  applyChanges: () => Promise<void>;
+  resetDraft: () => void;
 };
 
 const defaultContent: ContentState = {
@@ -251,236 +246,102 @@ const defaultContent: ContentState = {
 
 const ContentContext = createContext<ContentContextValue | undefined>(undefined);
 
-
-
 export function ContentProvider({ children }: { children: ReactNode }) {
+  const [publishedContent, setPublishedContent] = useState<ContentState>(defaultContent);
+  const [draftContent, setDraftContent] = useState<ContentState>(defaultContent);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [content, setContent] = useState<ContentState>(defaultContent);
-
-  // Fetch all content from backend on mount
+  // Initial fetch
   useEffect(() => {
-    const fetchAllContent = async () => {
+    (async () => {
+      setLoading(true);
+      setError(null);
       try {
-        // Hero
-        const heroRes = await fetch("/api/content/hero");
-        const heroData = await heroRes.json();
-        // About
-        const aboutRes = await fetch("/api/content/about");
-        const aboutData = await aboutRes.json();
-        // Services
-        const servicesRes = await fetch("/api/content/services");
-        const servicesData = await servicesRes.json();
-        // Portfolio (all categories)
-        const categories: TabKey[] = ["brand", "event", "print", "product"];
-        const portfolio: Record<TabKey, PortfolioCategory> = {} as any;
-        for (const cat of categories) {
-          const res = await fetch(`/api/content/portfolio/${cat}`);
-          const items = await res.json();
-          portfolio[cat] = {
-            title: defaultContent.portfolio[cat].title,
-            description: defaultContent.portfolio[cat].description,
+        const [heroRes, aboutRes, servicesRes, ...portfolioResArr] = await Promise.all([
+          fetch("/api/content/hero"),
+          fetch("/api/content/about"),
+          fetch("/api/content/services"),
+          ...(["brand", "event", "print", "product"] as TabKey[]).map(cat => fetch(`/api/content/portfolio/${cat}`)),
+        ]);
+        const hero = (await heroRes.json()).hero;
+        const about = (await aboutRes.json()).about;
+        const services = await servicesRes.json();
+        const portfolio: Record<TabKey, PortfolioCategory> = {
+          brand: { ...defaultContent.portfolio.brand, items: [] },
+          event: { ...defaultContent.portfolio.event, items: [] },
+          print: { ...defaultContent.portfolio.print, items: [] },
+          product: { ...defaultContent.portfolio.product, items: [] },
+        };
+        const cats: TabKey[] = ["brand", "event", "print", "product"];
+        for (let i = 0; i < cats.length; i++) {
+          const items = (await portfolioResArr[i].json()) as PortfolioItem[];
+          portfolio[cats[i]] = {
+            title: defaultContent.portfolio[cats[i]].title,
+            description: defaultContent.portfolio[cats[i]].description,
             items,
           };
         }
-        setContent({
-          hero: heroData.hero || defaultContent.hero,
-          about: aboutData.about || defaultContent.about,
-          services: servicesData || defaultContent.services,
-          portfolio,
-        });
-      } catch (err) {
-        console.error("Failed to fetch content from backend", err);
+        const loaded: ContentState = { hero, about, services, portfolio };
+        setPublishedContent(loaded);
+        setDraftContent(loaded);
+      } catch {
+        setError("Failed to load content.");
+      } finally {
+        setLoading(false);
       }
-    };
-    fetchAllContent();
+    })();
   }, []);
 
-  const value = useMemo<ContentContextValue>(() => {
+  // Save draft to backend
+  const applyChanges = async (): Promise<void> => {
+    setSaving(true);
+    setError(null);
+    try {
+      // Save hero and about
+      await Promise.all([
+        fetch("/api/content/hero", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draftContent.hero) }),
+        fetch("/api/content/about", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draftContent.about) }),
+      ]);
+      // Save services
+      await Promise.all(draftContent.services.map(service =>
+        fetch(`/api/content/services/${service.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(service) })
+      ));
+      // Save portfolio
+      await Promise.all(
+        (Object.keys(draftContent.portfolio) as TabKey[]).flatMap(cat =>
+          draftContent.portfolio[cat].items.map(item =>
+            fetch(`/api/content/portfolio/${cat}/${item.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) })
+          )
+        )
+      );
+      setPublishedContent(draftContent);
+    } catch (err) {
+      setError("Failed to save changes.");
+      throw err;
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    const addService = async (service: Omit<Service, "id">) => {
-      try {
-        const res = await fetch("/api/content/services", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(service),
-        });
-        if (!res.ok) throw new Error("Failed to add service");
-        const newService = await res.json();
-        setContent((prev) => ({
-          ...prev,
-          services: [...prev.services, newService],
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  // Reset draft to last published
+  const resetDraft = () => setDraftContent(publishedContent);
 
-
-    const updateHero = async (data: Partial<HeroContent>) => {
-      try {
-        const res = await fetch("/api/content/hero", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to update hero");
-        const updated = await res.json();
-        setContent((prev) => ({ ...prev, hero: updated.hero }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-
-    const updateAbout = async (data: Partial<AboutContent>) => {
-      try {
-        const res = await fetch("/api/content/about", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to update about");
-        const updated = await res.json();
-        setContent((prev) => ({ ...prev, about: updated.about }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-
-    const updateService = async (id: string, data: Partial<Service>) => {
-      try {
-        const res = await fetch(`/api/content/services/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to update service");
-        const updated = await res.json();
-        setContent((prev) => ({
-          ...prev,
-          services: prev.services.map((srv) =>
-            srv.id === id ? updated : srv
-          ),
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-
-    const removeService = async (id: string) => {
-      try {
-        const res = await fetch(`/api/content/services/${id}`, {
-          method: "DELETE"
-        });
-        if (!res.ok) throw new Error("Failed to delete service");
-        setContent((prev) => ({
-          ...prev,
-          services: prev.services.filter((srv) => srv.id !== id),
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-
-    const addPortfolioItem = async (category: TabKey, item: Omit<PortfolioItem, "id">) => {
-      try {
-        const res = await fetch(`/api/content/portfolio/${category}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(item),
-        });
-        if (!res.ok) throw new Error("Failed to add portfolio item");
-        const newItem = await res.json();
-        setContent((prev) => ({
-          ...prev,
-          portfolio: {
-            ...prev.portfolio,
-            [category]: {
-              ...prev.portfolio[category],
-              items: [...prev.portfolio[category].items, newItem],
-            },
-          },
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-
-    const updatePortfolioItem = async (
-      category: TabKey,
-      id: string,
-      data: Partial<PortfolioItem>
-    ) => {
-      try {
-        const res = await fetch(`/api/content/portfolio/${category}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to update portfolio item");
-        const updated = await res.json();
-        setContent((prev) => ({
-          ...prev,
-          portfolio: {
-            ...prev.portfolio,
-            [category]: {
-              ...prev.portfolio[category],
-              items: prev.portfolio[category].items.map((itm) =>
-                itm.id === id ? updated : itm
-              ),
-            },
-          },
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-
-    const removePortfolioItem = async (category: TabKey, id: string) => {
-      try {
-        const res = await fetch(`/api/content/portfolio/${category}/${id}`, {
-          method: "DELETE"
-        });
-        if (!res.ok) throw new Error("Failed to delete portfolio item");
-        setContent((prev) => ({
-          ...prev,
-          portfolio: {
-            ...prev.portfolio,
-            [category]: {
-              ...prev.portfolio[category],
-              items: prev.portfolio[category].items.filter((itm) => itm.id !== id),
-            },
-          },
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const applyChanges = () => {
-      // No-op: state is always synced with backend
-    };
-
-    return {
-      content,
-      addService,
-      updateService,
-      removeService,
-      addPortfolioItem,
-      updatePortfolioItem,
-      removePortfolioItem,
+  return (
+    <ContentContext.Provider value={{
+      publishedContent,
+      draftContent,
+      setDraftContent,
+      loading,
+      saving,
+      error,
       applyChanges,
-      updateHero,
-      updateAbout,
-    };
-  }, [content]);
-
-  return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;
+      resetDraft,
+    }}>
+      {children}
+    </ContentContext.Provider>
+  );
 }
 
 export function useContent() {

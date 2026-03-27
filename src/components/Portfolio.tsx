@@ -7,11 +7,11 @@ import {
 import "../styles/Portfolio.css";
 
 export default function Portfolio() {
-  const { content } = useContent();
+  const { publishedContent } = useContent();
   const [activeTab, setActiveTab] = useState<TabKey>("brand");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const portfolioData = content.portfolio;
+  const portfolioData = publishedContent.portfolio;
   const orderedKeys: TabKey[] = ["brand", "event", "print", "product"];
 
   const categories = orderedKeys.map((key) => ({

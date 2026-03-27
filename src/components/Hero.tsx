@@ -7,7 +7,7 @@ type HeroProps = {
 
 export default function Hero({ onContactClick }: HeroProps) {
   const {
-    content: { hero },
+    publishedContent: { hero },
   } = useContent();
 
   return (

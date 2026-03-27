@@ -3,7 +3,7 @@ import { useContent } from "../context/ContentContext";
 
 export default function About() {
   const {
-    content: { about },
+    publishedContent: { about },
   } = useContent();
 
   return (

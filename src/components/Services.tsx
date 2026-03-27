@@ -2,8 +2,8 @@ import { useContent } from "../context/ContentContext";
 import "../styles/Services.css";
 
 export default function Services() {
-  const { content } = useContent();
-  const servicesData = content.services;
+  const { publishedContent } = useContent();
+  const servicesData = publishedContent.services;
 
   return (
     <section className="services" id="services">
@@ -17,7 +17,7 @@ export default function Services() {
         </div>
 
         <div className="services-grid">
-          {servicesData.map((service) => (
+          {servicesData.map((service: (typeof servicesData)[number]) => (
             <div className="service-card" key={service.id}>
               <div className="service-image-wrapper">
                 <img src={service.image} alt={service.title} />
