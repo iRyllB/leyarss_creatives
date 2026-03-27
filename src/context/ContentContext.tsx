@@ -284,80 +284,170 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   }, [content]);
 
   const value = useMemo<ContentContextValue>(() => {
-    const addService = (service: Omit<Service, "id">) => {
-      setContent((prev) => ({
-        ...prev,
-        services: [...prev.services, { ...service, id: generateId() }],
-      }));
+
+    const addService = async (service: Omit<Service, "id">) => {
+      try {
+        const res = await fetch("http://localhost:5000/api/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(service),
+        });
+        if (!res.ok) throw new Error("Failed to add service");
+        const newService = await res.json();
+        setContent((prev) => ({
+          ...prev,
+          services: [...prev.services, newService],
+        }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const updateHero = (data: Partial<HeroContent>) => {
-      setContent((prev) => ({ ...prev, hero: { ...prev.hero, ...data } }));
+
+    const updateHero = async (data: Partial<HeroContent>) => {
+      try {
+        const res = await fetch("http://localhost:5000/api/content/hero", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Failed to update hero");
+        const updated = await res.json();
+        setContent((prev) => ({ ...prev, hero: updated.hero }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const updateAbout = (data: Partial<AboutContent>) => {
-      setContent((prev) => ({ ...prev, about: { ...prev.about, ...data } }));
+
+    const updateAbout = async (data: Partial<AboutContent>) => {
+      try {
+        const res = await fetch("http://localhost:5000/api/content/about", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Failed to update about");
+        const updated = await res.json();
+        setContent((prev) => ({ ...prev, about: updated.about }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const updateService = (id: string, data: Partial<Service>) => {
-      setContent((prev) => ({
-        ...prev,
-        services: prev.services.map((srv) =>
-          srv.id === id ? { ...srv, ...data, id: srv.id } : srv
-        ),
-      }));
+
+    const updateService = async (id: string, data: Partial<Service>) => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/content/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Failed to update service");
+        const updated = await res.json();
+        setContent((prev) => ({
+          ...prev,
+          services: prev.services.map((srv) =>
+            srv.id === id ? updated : srv
+          ),
+        }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const removeService = (id: string) => {
-      setContent((prev) => ({
-        ...prev,
-        services: prev.services.filter((srv) => srv.id !== id),
-      }));
+
+    const removeService = async (id: string) => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/content/${id}`, {
+          method: "DELETE"
+        });
+        if (!res.ok) throw new Error("Failed to delete service");
+        setContent((prev) => ({
+          ...prev,
+          services: prev.services.filter((srv) => srv.id !== id),
+        }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const addPortfolioItem = (category: TabKey, item: Omit<PortfolioItem, "id">) => {
-      setContent((prev) => ({
-        ...prev,
-        portfolio: {
-          ...prev.portfolio,
-          [category]: {
-            ...prev.portfolio[category],
-            items: [...prev.portfolio[category].items, { ...item, id: generateId() }],
+
+    const addPortfolioItem = async (category: TabKey, item: Omit<PortfolioItem, "id">) => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/content/portfolio/${category}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(item),
+        });
+        if (!res.ok) throw new Error("Failed to add portfolio item");
+        const newItem = await res.json();
+        setContent((prev) => ({
+          ...prev,
+          portfolio: {
+            ...prev.portfolio,
+            [category]: {
+              ...prev.portfolio[category],
+              items: [...prev.portfolio[category].items, newItem],
+            },
           },
-        },
-      }));
+        }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const updatePortfolioItem = (
+
+    const updatePortfolioItem = async (
       category: TabKey,
       id: string,
       data: Partial<PortfolioItem>
     ) => {
-      setContent((prev) => ({
-        ...prev,
-        portfolio: {
-          ...prev.portfolio,
-          [category]: {
-            ...prev.portfolio[category],
-            items: prev.portfolio[category].items.map((itm) =>
-              itm.id === id ? { ...itm, ...data, id: itm.id } : itm
-            ),
+      try {
+        const res = await fetch(`http://localhost:5000/api/content/portfolio/${category}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Failed to update portfolio item");
+        const updated = await res.json();
+        setContent((prev) => ({
+          ...prev,
+          portfolio: {
+            ...prev.portfolio,
+            [category]: {
+              ...prev.portfolio[category],
+              items: prev.portfolio[category].items.map((itm) =>
+                itm.id === id ? updated : itm
+              ),
+            },
           },
-        },
-      }));
+        }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    const removePortfolioItem = (category: TabKey, id: string) => {
-      setContent((prev) => ({
-        ...prev,
-        portfolio: {
-          ...prev.portfolio,
-          [category]: {
-            ...prev.portfolio[category],
-            items: prev.portfolio[category].items.filter((itm) => itm.id !== id),
+
+    const removePortfolioItem = async (category: TabKey, id: string) => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/content/portfolio/${category}/${id}`, {
+          method: "DELETE"
+        });
+        if (!res.ok) throw new Error("Failed to delete portfolio item");
+        setContent((prev) => ({
+          ...prev,
+          portfolio: {
+            ...prev.portfolio,
+            [category]: {
+              ...prev.portfolio[category],
+              items: prev.portfolio[category].items.filter((itm) => itm.id !== id),
+            },
           },
-        },
-      }));
+        }));
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     const applyChanges = () => {
