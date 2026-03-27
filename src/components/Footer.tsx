@@ -1,21 +1,27 @@
 import "../styles/Footer.css";
+import { Facebook, Instagram, Music2 } from "lucide-react";
 
 const socialLinks = [
   {
     href: "https://www.facebook.com/leyarsscreative",
     label: "Facebook",
+    icon: Facebook,
   },
   {
     href: "https://www.instagram.com/leyarsscreative",
     label: "Instagram",
+    icon: Instagram,
   },
   {
     href: "https://www.tiktok.com/@leyarsscreative",
     label: "TikTok",
+    icon: Music2,
   },
 ];
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
       <footer className="footer">
 
@@ -29,13 +35,13 @@ export default function Footer() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="circle social-link"
+                  className="social-link"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
                   title={link.label}
                 >
-                  <span>{link.label.charAt(0)}</span>
+                  <link.icon size={18} strokeWidth={2.1} aria-hidden="true" />
                 </a>
               ))}
             </div>
@@ -77,7 +83,7 @@ export default function Footer() {
         <div className="footer-line"/>
 
         <p className="copyright">
-          © 2026 Leyarss Creatives. All rights reserved.
+          © {currentYear} Leyarss Creatives. All rights reserved.
         </p>
 
       </footer>

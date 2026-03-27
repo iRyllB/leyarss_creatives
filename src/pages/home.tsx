@@ -31,38 +31,6 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const revealItems = Array.from(
-      document.querySelectorAll<HTMLElement>(".reveal-on-scroll")
-    );
-
-    if (revealItems.length === 0) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("revealed");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold: 0.2,
-        rootMargin: "0px 0px -40px 0px",
-      }
-    );
-
-    revealItems.forEach((item, index) => {
-      item.style.setProperty("--reveal-delay", `${index * 80}ms`);
-      observer.observe(item);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
   const openContactModal = () => setIsContactOpen(true);
   const closeContactModal = () => setIsContactOpen(false);
   const scrollToTop = () => {
@@ -77,15 +45,9 @@ export default function Home() {
         <div className="reveal-on-scroll reveal-hero revealed">
           <Hero onContactClick={openContactModal} />
         </div>
-        <div className="reveal-on-scroll reveal-about">
-          <About />
-        </div>
-        <div className="reveal-on-scroll reveal-services">
-          <Services />
-        </div>
-        <div className="reveal-on-scroll reveal-portfolio">
-          <Portfolio />
-        </div>
+        <About />
+        <Services />
+        <Portfolio />
       </div>
 
       <Footer />

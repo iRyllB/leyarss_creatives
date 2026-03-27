@@ -8,6 +8,7 @@
   padding: 120px 0;
   display: flex;
   justify-content: center;
+  overflow-x: clip;
 }
 
 .about-container {

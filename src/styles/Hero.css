@@ -136,7 +136,7 @@
 }
 
 .hero-brand-btn:hover {
-  transform: scale(1.06);
+  transform: translateY(-2px);
   background: transparent;
   border-color: transparent;
   box-shadow:

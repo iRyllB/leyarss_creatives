@@ -186,7 +186,7 @@
 }
 
 .site-contact-btn:hover {
-  transform: scale(1.08);
+  transform: translateY(-2px);
 }
 
 .site-contact-btn:hover::before {

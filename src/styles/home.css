@@ -11,6 +11,7 @@ html,
 body {
   width: 100%;
   min-height: 100%;
+  overflow-x: clip;
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
@@ -26,22 +27,23 @@ body {
 
 .home {
   width: 100%;
+  overflow-x: clip;
   overflow-x: hidden;
 }
 
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(34px) scale(0.985);
-  filter: blur(3px);
-  transition: opacity 0.75s ease, transform 0.75s ease, filter 0.75s ease;
+  transform: translateY(24px);
+  overflow-x: clip;
+  contain: paint;
+  transition: opacity 0.65s ease, transform 0.65s ease;
   transition-delay: var(--reveal-delay, 0ms);
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
 }
 
 .reveal-on-scroll.revealed {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0);
+  transform: translateY(0);
 }
 
 .reveal-hero .hero-left h1,
@@ -127,7 +129,7 @@ body {
 }
 
 .reveal-portfolio.revealed .portfolio-tab {
-  animation: tabPopIn 0.5s ease both;
+  animation: portfolioFadeUp 0.52s ease both;
 }
 
 .reveal-portfolio.revealed .portfolio-tab:nth-child(1) { animation-delay: 190ms; }
@@ -136,11 +138,11 @@ body {
 .reveal-portfolio.revealed .portfolio-tab:nth-child(4) { animation-delay: 340ms; }
 
 .reveal-portfolio.revealed .portfolio-category-info {
-  animation: textLift 0.62s ease 300ms both;
+  animation: portfolioFadeUp 0.58s ease 300ms both;
 }
 
 .reveal-portfolio.revealed .portfolio-slider-item {
-  animation: cardRise 0.68s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: portfolioFadeUp 0.62s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .reveal-portfolio.revealed .portfolio-slider-item:nth-child(1) { animation-delay: 360ms; }
@@ -148,76 +150,83 @@ body {
 .reveal-portfolio.revealed .portfolio-slider-item:nth-child(3) { animation-delay: 520ms; }
 
 .reveal-portfolio.revealed .slider-indicators {
-  animation: textLift 0.56s ease 580ms both;
+  animation: portfolioFadeUp 0.5s ease 580ms both;
+}
+
+@keyframes portfolioFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes textLift {
   from {
     opacity: 0;
-    transform: translateY(26px);
-    filter: blur(2px);
+    transform: translateY(22px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
 @keyframes textSlideLeft {
   from {
     opacity: 0;
-    transform: translateX(-30px);
+    transform: translateY(22px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes textSlideRight {
   from {
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateY(22px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes imageFloatIn {
   from {
     opacity: 0;
-    transform: translateY(28px) scale(0.93) rotate(-2deg);
-    filter: blur(3px);
+    transform: translateY(26px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1) rotate(0deg);
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes cardRise {
   from {
     opacity: 0;
-    transform: translateY(36px) scale(0.96);
+    transform: translateY(26px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes tabPopIn {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.92);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 

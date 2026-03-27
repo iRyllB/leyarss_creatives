@@ -7,6 +7,7 @@
   padding: 120px 0;
   display: flex;
   justify-content: center;
+  overflow-x: clip;
 }
 
 .services-container {
@@ -59,6 +60,7 @@
   background: linear-gradient(120deg, #00aeef, #fff200, #ec008c, #00aeef);
   background-size: 220% 220%;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -99,7 +101,7 @@
 }
 
 .service-card:hover .service-image-wrapper img {
-  transform: scale(1.08);
+  transform: scale(1.03);
 }
 
 .service-overlay {
