@@ -1,7 +1,22 @@
-  import "../styles/Footer.css"
+import "../styles/Footer.css";
 
-  export default function Footer(){
-    return(
+const socialLinks = [
+  {
+    href: "https://www.facebook.com/leyarsscreative",
+    label: "Facebook",
+  },
+  {
+    href: "https://www.instagram.com/leyarsscreative",
+    label: "Instagram",
+  },
+  {
+    href: "https://www.tiktok.com/@leyarsscreative",
+    label: "TikTok",
+  },
+];
+
+export default function Footer() {
+  return (
       <footer className="footer">
 
         <div className="footer-container">
@@ -10,9 +25,19 @@
             <img src="/logo.png" alt="Leyarss Logo"/>
             
             <div className="socials">
-              <div className="circle"/>
-              <div className="circle"/>
-              <div className="circle"/>
+              {socialLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="circle social-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={link.label}
+                  title={link.label}
+                >
+                  <span>{link.label.charAt(0)}</span>
+                </a>
+              ))}
             </div>
           </div>
 
@@ -56,5 +81,5 @@
         </p>
 
       </footer>
-    )
-  }
+  );
+}

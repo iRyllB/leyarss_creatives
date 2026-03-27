@@ -29,6 +29,241 @@ body {
   overflow-x: hidden;
 }
 
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(34px) scale(0.985);
+  filter: blur(3px);
+  transition: opacity 0.75s ease, transform 0.75s ease, filter 0.75s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+.reveal-hero .hero-left h1,
+.reveal-hero .hero-left p,
+.reveal-hero .hero-buttons,
+.reveal-hero .hero-right img,
+.reveal-about .about-text h2,
+.reveal-about .about-text p,
+.reveal-about .about-image,
+.reveal-services .services-header h2,
+.reveal-services .services-header p,
+.reveal-services .service-card,
+.reveal-portfolio .portfolio-slider-header h2,
+.reveal-portfolio .portfolio-slider-header p,
+.reveal-portfolio .portfolio-tab,
+.reveal-portfolio .portfolio-category-info,
+.reveal-portfolio .portfolio-slider-item,
+.reveal-portfolio .slider-indicators {
+  opacity: 0;
+}
+
+.reveal-hero.revealed .hero-left h1 {
+  animation: textLift 0.72s cubic-bezier(0.19, 1, 0.22, 1) 60ms both;
+}
+
+.reveal-hero.revealed .hero-left p {
+  animation: textLift 0.7s cubic-bezier(0.19, 1, 0.22, 1) 180ms both;
+}
+
+.reveal-hero.revealed .hero-buttons {
+  animation: textLift 0.66s cubic-bezier(0.19, 1, 0.22, 1) 300ms both;
+}
+
+.reveal-hero.revealed .hero-right img {
+  animation: imageFloatIn 0.9s cubic-bezier(0.17, 0.84, 0.44, 1) 220ms both;
+}
+
+.reveal-about.revealed .about-text h2 {
+  animation: textSlideLeft 0.68s ease 40ms both;
+}
+
+.reveal-about.revealed .about-text p {
+  animation: textSlideLeft 0.68s ease 150ms both;
+}
+
+.reveal-about.revealed .about-image {
+  animation: textSlideRight 0.76s ease 220ms both;
+}
+
+.reveal-services.revealed .services-header h2 {
+  animation: textLift 0.6s ease 30ms both;
+}
+
+.reveal-services.revealed .services-header p {
+  animation: textLift 0.6s ease 120ms both;
+}
+
+.reveal-services.revealed .service-card {
+  animation: cardRise 0.64s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.reveal-services.revealed .service-card:nth-child(1),
+.reveal-services.revealed .service-card:nth-child(4) {
+  animation-delay: 140ms;
+}
+
+.reveal-services.revealed .service-card:nth-child(2),
+.reveal-services.revealed .service-card:nth-child(5) {
+  animation-delay: 220ms;
+}
+
+.reveal-services.revealed .service-card:nth-child(3),
+.reveal-services.revealed .service-card:nth-child(6) {
+  animation-delay: 300ms;
+}
+
+.reveal-portfolio.revealed .portfolio-slider-header h2 {
+  animation: textLift 0.64s ease 50ms both;
+}
+
+.reveal-portfolio.revealed .portfolio-slider-header p {
+  animation: textLift 0.64s ease 140ms both;
+}
+
+.reveal-portfolio.revealed .portfolio-tab {
+  animation: tabPopIn 0.5s ease both;
+}
+
+.reveal-portfolio.revealed .portfolio-tab:nth-child(1) { animation-delay: 190ms; }
+.reveal-portfolio.revealed .portfolio-tab:nth-child(2) { animation-delay: 240ms; }
+.reveal-portfolio.revealed .portfolio-tab:nth-child(3) { animation-delay: 290ms; }
+.reveal-portfolio.revealed .portfolio-tab:nth-child(4) { animation-delay: 340ms; }
+
+.reveal-portfolio.revealed .portfolio-category-info {
+  animation: textLift 0.62s ease 300ms both;
+}
+
+.reveal-portfolio.revealed .portfolio-slider-item {
+  animation: cardRise 0.68s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.reveal-portfolio.revealed .portfolio-slider-item:nth-child(1) { animation-delay: 360ms; }
+.reveal-portfolio.revealed .portfolio-slider-item:nth-child(2) { animation-delay: 440ms; }
+.reveal-portfolio.revealed .portfolio-slider-item:nth-child(3) { animation-delay: 520ms; }
+
+.reveal-portfolio.revealed .slider-indicators {
+  animation: textLift 0.56s ease 580ms both;
+}
+
+@keyframes textLift {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes textSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes textSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes imageFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.93) rotate(-2deg);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+    filter: blur(0);
+  }
+}
+
+@keyframes cardRise {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tabPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.back-to-top {
+  position: fixed;
+  right: 22px;
+  bottom: 24px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(7, 14, 34, 0.88);
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1200;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease,
+    background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.back-to-top:hover {
+  background: rgba(18, 29, 66, 0.96);
+  border-color: rgba(255, 255, 255, 0.54);
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .back-to-top {
+    right: 14px;
+    bottom: 18px;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+}
+
 /* GLOBAL CONTAINER */
 
 .section-container {
