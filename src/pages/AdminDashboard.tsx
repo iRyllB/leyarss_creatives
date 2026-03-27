@@ -25,6 +25,7 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState<SectionKey>("hero");
   const [activePortfolioTab, setActivePortfolioTab] = useState<TabKey>("brand");
   const [status, setStatus] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [newService, setNewService] = useState<Omit<Service, "id">>({
     title: "",
     category: "",
@@ -67,6 +68,12 @@ export default function AdminDashboard() {
     setConfirmState((prev) => ({ ...prev, open: false }));
 
   const handleApply = () => {
+    if (uploading) {
+      setStatus("Please wait for image upload to finish.");
+      setTimeout(() => setStatus(""), 2500);
+      return;
+    }
+
     askConfirm(
       "Apply changes?",
       "Push the current edits to the public view.",
@@ -83,16 +90,64 @@ export default function AdminDashboard() {
     );
   };
 
+  const uploadImageToBlob = async (file: File): Promise<string> => {
+    const bytes = await file.arrayBuffer();
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+        "x-file-name": file.name,
+      },
+      body: bytes,
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | { url?: string; error?: string }
+      | null;
+
+    if (!response.ok || !payload?.url) {
+      throw new Error(payload?.error || "Image upload failed.");
+    }
+
+    return payload.url;
+  };
+
   const handleSelectImage = (
     files: FileList | null,
     setter: (value: string) => void
   ) => {
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {
+      return;
+    }
+
     const file = files[0];
-    const allowed = ["image/jpeg", "image/png"];
-    if (!allowed.includes(file.type)) return;
-    const url = URL.createObjectURL(file);
-    setter(url);
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowed.includes(file.type)) {
+      setStatus("Only JPG, PNG, and WEBP files are allowed.");
+      setTimeout(() => setStatus(""), 2500);
+      return;
+    }
+
+    setUploading(true);
+    setStatus("Uploading image...");
+
+    void uploadImageToBlob(file)
+      .then((url) => {
+        setter(url);
+        setStatus("Image uploaded successfully.");
+        setTimeout(() => setStatus(""), 1800);
+      })
+      .catch((uploadError) => {
+        const message =
+          uploadError instanceof Error ? uploadError.message : "Image upload failed.";
+        setStatus(message);
+        setTimeout(() => setStatus(""), 3000);
+      })
+      .finally(() => {
+        setUploading(false);
+      });
   };
 
   const handleAddService = () => {

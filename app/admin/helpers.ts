@@ -54,12 +54,15 @@ export async function getHomepageContent(): Promise<HomepageContent> {
 }
 
 export async function uploadHeroImage(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", file);
+  const bytes = await file.arrayBuffer();
 
   const response = await fetch("/api/upload", {
     method: "POST",
-    body: formData,
+    headers: {
+      "Content-Type": file.type || "application/octet-stream",
+      "x-file-name": file.name,
+    },
+    body: bytes,
   });
 
   const payload = await parseJsonResponse<{ url?: string; error?: string }>(response);
