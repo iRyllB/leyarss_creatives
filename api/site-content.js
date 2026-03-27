@@ -1,6 +1,5 @@
-import { get, put } from "@vercel/edge-config";
-
-const CONTENT_KEY = "site_content";
+const PRIMARY_CONTENT_KEY = "site-content";
+const LEGACY_CONTENT_KEY = "site_content";
 
 const defaultContent = {
   hero: {
@@ -118,25 +117,145 @@ function normalizeContent(input) {
   };
 }
 
-export default async function handler(req, res) {
+function parseJsonSafely(text) {
+  if (!text) {
+    return null;
+  }
+
   try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text };
+  }
+}
+
+function getRequiredEnv() {
+  const token = process.env.VERCEL_TOKEN;
+  const edgeConfigId = process.env.EDGE_CONFIG_ID;
+
+  if (!token || !edgeConfigId) {
+    const missing = [];
+    if (!token) missing.push("VERCEL_TOKEN");
+    if (!edgeConfigId) missing.push("EDGE_CONFIG_ID");
+    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  return { token, edgeConfigId };
+}
+
+async function callVercelApi({ token, edgeConfigId, method, key, body }) {
+  const url = `https://api.vercel.com/v1/edge-config/${edgeConfigId}/items${
+    key ? `?key=${encodeURIComponent(key)}` : ""
+  }`;
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+
+  const text = await response.text();
+  const payload = parseJsonSafely(text);
+
+  if (!response.ok) {
+    throw new Error(
+      `Vercel API ${method} failed (${response.status}): ${JSON.stringify(payload)}`
+    );
+  }
+
+  return payload;
+}
+
+function extractEdgeConfigValue(payload, key) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  if (Array.isArray(payload.items)) {
+    const found = payload.items.find((item) => item?.key === key);
+    return found?.value ?? null;
+  }
+
+  if (payload.key === key && "value" in payload) {
+    return payload.value;
+  }
+
+  return null;
+}
+
+export default async function handler(req, res) {
+  const trace = req.headers["x-vercel-id"] || "no-trace";
+
+  try {
+    const { token, edgeConfigId } = getRequiredEnv();
+
     if (req.method === "GET") {
-      const data = await get(CONTENT_KEY);
-      return res.status(200).json(normalizeContent(data));
+      const primaryPayload = await callVercelApi({
+        token,
+        edgeConfigId,
+        method: "GET",
+        key: PRIMARY_CONTENT_KEY,
+      });
+
+      let value = extractEdgeConfigValue(primaryPayload, PRIMARY_CONTENT_KEY);
+
+      // Backward compatibility for previously saved key naming.
+      if (!value) {
+        const legacyPayload = await callVercelApi({
+          token,
+          edgeConfigId,
+          method: "GET",
+          key: LEGACY_CONTENT_KEY,
+        });
+        value = extractEdgeConfigValue(legacyPayload, LEGACY_CONTENT_KEY);
+      }
+
+      return res.status(200).json(normalizeContent(value));
     }
 
     if (req.method === "POST") {
-      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      let body;
+
+      try {
+        body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      } catch {
+        return res.status(400).json({ error: "Invalid JSON body." });
+      }
+
       const content = normalizeContent(body);
 
-      await put(CONTENT_KEY, content);
+      await callVercelApi({
+        token,
+        edgeConfigId,
+        method: "PATCH",
+        body: {
+          items: [
+            {
+              operation: "upsert",
+              key: PRIMARY_CONTENT_KEY,
+              value: content,
+            },
+          ],
+        },
+      });
+
+      console.log("[site-content][POST] Updated successfully", { trace });
 
       return res.status(200).json({ success: true });
     }
 
     res.setHeader("Allow", ["GET", "POST"]);
     return res.status(405).json({ error: "Method Not Allowed" });
-  } catch {
+  } catch (error) {
+    console.error("[site-content] Function failed", {
+      trace,
+      method: req.method,
+      message: error instanceof Error ? error.message : String(error),
+    });
     return res.status(500).json({ error: "Site content API failed." });
   }
 }
