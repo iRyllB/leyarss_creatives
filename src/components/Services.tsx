@@ -4,6 +4,9 @@ import "../styles/Services.css";
 
 export default function Services() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { publishedContent } = useContent();
+  const servicesData = publishedContent.services;
+  const serviceIds = servicesData.map((service) => service.id).join("|");
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -32,10 +35,7 @@ export default function Services() {
     targets.forEach((target) => observer.observe(target));
 
     return () => observer.disconnect();
-  }, []);
-
-  const { publishedContent } = useContent();
-  const servicesData = publishedContent.services;
+  }, [serviceIds]);
 
   return (
     <section className="services" id="services" ref={sectionRef}>

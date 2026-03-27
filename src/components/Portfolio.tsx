@@ -42,6 +42,7 @@ export default function Portfolio() {
     currentIndex,
     currentIndex + itemsPerView
   );
+  const displayedItemIds = displayedItems.map((item) => item.id).join("|");
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -70,7 +71,7 @@ export default function Portfolio() {
     targets.forEach((target) => observer.observe(target));
 
     return () => observer.disconnect();
-  }, [activeTab, currentIndex]);
+  }, [activeTab, currentIndex, displayedItemIds]);
 
   return (
     <section className="portfolio-slider" id="portfolio" ref={sectionRef}>
