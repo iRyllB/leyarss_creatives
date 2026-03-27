@@ -251,10 +251,7 @@ const defaultContent: ContentState = {
 
 const ContentContext = createContext<ContentContextValue | undefined>(undefined);
 
-const generateId = () =>
-  typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<ContentState>(() => {
