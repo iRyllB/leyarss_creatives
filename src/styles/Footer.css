@@ -1,12 +1,6 @@
 .footer{
   width:100vw;
-  background:conic-gradient(
-    from 90deg at -3% 50%,
-    #061426 -89.5deg,
-    #000000 91.05deg,
-    #061426 270.5deg,
-    #000000 451.05deg
-  ), #06050A;
+  background:#0b0f16;
 
   display:flex;
   flex-direction:column;

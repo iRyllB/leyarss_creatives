@@ -10,20 +10,12 @@
   justify-content: center;
   align-items: center;
 
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(6px);
+  background: #0b0f16;
   transition: background 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .site-header--scrolled {
-  background: conic-gradient(
-      from 90deg at 50% 50%,
-      #000000 -89.72deg,
-      #061426 89.95deg,
-      #000000 270.28deg,
-      #061426 449.95deg
-    ),
-    #06050a;
+  background: rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(6px);
 }
 
