@@ -1,87 +1,70 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 app.use(cors());
-<<<<<<< HEAD
 app.use(express.json());
 
-=======
-
-app.use(express.json());
-
-// Admin schema/model
-const AdminSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-});
-const Admin = mongoose.model('Admin', AdminSchema);
-
-// Admin login route
+/* -------------------- ADMIN LOGIN -------------------- */
 app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
+
   try {
-    const admin = await Admin.findOne({ username });
-    if (!admin || admin.password !== password) {
+    const { data, error } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error || !data || data.password !== password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
     res.json({ success: true });
+
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
->>>>>>> 1fb557f8358953dbd6d33b00dd3257d8f467370c
-// Example schema/model
-const ContentSchema = new mongoose.Schema({
-  title: String,
-  body: String,
-  createdAt: { type: Date, default: Date.now }
-});
-const Content = mongoose.model('Content', ContentSchema);
+/* -------------------- CONTENT -------------------- */
 
-// CRUD routes
+// GET all content
 app.get('/api/content', async (req, res) => {
-  const items = await Content.find();
-  res.json(items);
+  const { data, error } = await supabase
+    .from('content')
+    .select('*');
+
+  if (error) return res.status(500).json({ error });
+
+  res.json(data);
 });
 
+// CREATE content
 app.post('/api/content', async (req, res) => {
-  const item = new Content(req.body);
-  await item.save();
-  res.status(201).json(item);
+  const { title, body } = req.body;
+
+  const { data, error } = await supabase
+    .from('content')
+    .insert([{ title, body }]);
+
+  if (error) return res.status(500).json({ error });
+
+  res.json(data);
 });
 
-app.put('/api/content/:id', async (req, res) => {
-  const item = await Content.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(item);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-app.delete('/api/content/:id', async (req, res) => {
-  await Content.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
-});
-
-<<<<<<< HEAD
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-=======
-
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(async () => {
-    // Ensure default admin exists
-    const defaultAdmin = await Admin.findOne({ username: 'admin' });
-    if (!defaultAdmin) {
-      await Admin.create({ username: 'admin', password: '@leyarss2026' });
-      console.log('Default admin created.');
-    }
->>>>>>> 1fb557f8358953dbd6d33b00dd3257d8f467370c
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
