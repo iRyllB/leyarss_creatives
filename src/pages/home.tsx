@@ -6,7 +6,7 @@ import Services from "../components/Services";
 import Portfolio from "../components/Portfolio";
 import Footer from "../components/Footer";
 import Form from "../components/Form";
-import "../styles/Home.css";
+import "../styles/home.css";
 
 export default function Home() {
   const [isContactOpen, setIsContactOpen] = useState(false);
