@@ -9,7 +9,29 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
+
 app.use(express.json());
+
+// Admin schema/model
+const AdminSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+});
+const Admin = mongoose.model('Admin', AdminSchema);
+
+// Admin login route
+app.post('/api/admin/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const admin = await Admin.findOne({ username });
+    if (!admin || admin.password !== password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // Example schema/model
 const ContentSchema = new mongoose.Schema({
@@ -41,8 +63,15 @@ app.delete('/api/content/:id', async (req, res) => {
   res.json({ success: true });
 });
 
+
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
+  .then(async () => {
+    // Ensure default admin exists
+    const defaultAdmin = await Admin.findOne({ username: 'admin' });
+    if (!defaultAdmin) {
+      await Admin.create({ username: 'admin', password: '@leyarss2026' });
+      console.log('Default admin created.');
+    }
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch(err => console.error('MongoDB connection error:', err));
