@@ -291,7 +291,12 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save content");
+        const payload = (await response.json().catch(() => null)) as
+          | { error?: string; code?: string; trace?: string }
+          | null;
+        const message = payload?.error || "Failed to save content";
+        const extra = payload?.trace ? ` (trace: ${payload.trace})` : "";
+        throw new Error(`${message}${extra}`);
       }
 
       setPublishedContent(draftContent);

@@ -1,3 +1,5 @@
+import { get as edgeGet } from "@vercel/edge-config";
+
 const PRIMARY_CONTENT_KEY = "site-content";
 const LEGACY_CONTENT_KEY = "site_content";
 
@@ -129,18 +131,35 @@ function parseJsonSafely(text) {
   }
 }
 
-function getRequiredEnv() {
-  const token = process.env.VERCEL_TOKEN;
-  const edgeConfigId = process.env.EDGE_CONFIG_ID;
+function parseEdgeConfigIdFromConnectionString() {
+  const conn = process.env.EDGE_CONFIG;
+  if (!conn || typeof conn !== "string") {
+    return "";
+  }
 
-  if (!token || !edgeConfigId) {
+  try {
+    const parsed = new URL(conn);
+    const path = parsed.pathname.replace(/^\/+/, "");
+    return path || "";
+  } catch {
+    return "";
+  }
+}
+
+function getWriteEnv() {
+  const token = process.env.VERCEL_TOKEN || process.env.VERCEL_API_TOKEN || "";
+  const edgeConfigId = process.env.EDGE_CONFIG_ID;
+  const parsedEdgeConfigId = parseEdgeConfigIdFromConnectionString();
+  const finalEdgeConfigId = edgeConfigId || parsedEdgeConfigId;
+
+  if (!token || !finalEdgeConfigId) {
     const missing = [];
     if (!token) missing.push("VERCEL_TOKEN");
-    if (!edgeConfigId) missing.push("EDGE_CONFIG_ID");
+    if (!finalEdgeConfigId) missing.push("EDGE_CONFIG_ID (or parseable EDGE_CONFIG)");
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
 
-  return { token, edgeConfigId };
+  return { token, edgeConfigId: finalEdgeConfigId };
 }
 
 async function callVercelApi({ token, edgeConfigId, method, key, body }) {
@@ -191,33 +210,65 @@ export default async function handler(req, res) {
   const trace = req.headers["x-vercel-id"] || "no-trace";
 
   try {
-    const { token, edgeConfigId } = getRequiredEnv();
-
     if (req.method === "GET") {
-      const primaryPayload = await callVercelApi({
-        token,
-        edgeConfigId,
-        method: "GET",
-        key: PRIMARY_CONTENT_KEY,
-      });
+      let value = null;
 
-      let value = extractEdgeConfigValue(primaryPayload, PRIMARY_CONTENT_KEY);
+      // Prefer REST call when write env exists; fallback to Edge Config SDK read.
+      try {
+        const { token, edgeConfigId } = getWriteEnv();
 
-      // Backward compatibility for previously saved key naming.
-      if (!value) {
-        const legacyPayload = await callVercelApi({
+        const primaryPayload = await callVercelApi({
           token,
           edgeConfigId,
           method: "GET",
-          key: LEGACY_CONTENT_KEY,
+          key: PRIMARY_CONTENT_KEY,
         });
-        value = extractEdgeConfigValue(legacyPayload, LEGACY_CONTENT_KEY);
+        value = extractEdgeConfigValue(primaryPayload, PRIMARY_CONTENT_KEY);
+
+        if (!value) {
+          const legacyPayload = await callVercelApi({
+            token,
+            edgeConfigId,
+            method: "GET",
+            key: LEGACY_CONTENT_KEY,
+          });
+          value = extractEdgeConfigValue(legacyPayload, LEGACY_CONTENT_KEY);
+        }
+      } catch (restReadError) {
+        console.warn("[site-content][GET] REST read failed, using SDK fallback", {
+          trace,
+          message:
+            restReadError instanceof Error
+              ? restReadError.message
+              : String(restReadError),
+        });
+
+        value = (await edgeGet(PRIMARY_CONTENT_KEY)) || (await edgeGet(LEGACY_CONTENT_KEY));
       }
 
       return res.status(200).json(normalizeContent(value));
     }
 
     if (req.method === "POST") {
+      let token = "";
+      let edgeConfigId = "";
+
+      try {
+        const env = getWriteEnv();
+        token = env.token;
+        edgeConfigId = env.edgeConfigId;
+      } catch (configError) {
+        console.error("[site-content][POST] missing config", {
+          trace,
+          message: configError instanceof Error ? configError.message : String(configError),
+        });
+        return res.status(500).json({
+          error: "Server config missing for Edge Config write.",
+          code: "CONFIG_MISSING",
+          trace,
+        });
+      }
+
       let body;
 
       try {
@@ -256,6 +307,10 @@ export default async function handler(req, res) {
       method: req.method,
       message: error instanceof Error ? error.message : String(error),
     });
-    return res.status(500).json({ error: "Site content API failed." });
+    return res.status(500).json({
+      error: "Site content API failed.",
+      code: "SITE_CONTENT_API_FAILED",
+      trace,
+    });
   }
 }
