@@ -254,37 +254,52 @@ const ContentContext = createContext<ContentContextValue | undefined>(undefined)
 
 
 export function ContentProvider({ children }: { children: ReactNode }) {
-  const [content, setContent] = useState<ContentState>(() => {
-    if (typeof window === "undefined") return defaultContent;
-    try {
-      const stored = localStorage.getItem("leyarss-content");
-      if (!stored) return defaultContent;
-      const parsed = JSON.parse(stored) as Partial<ContentState>;
-      return {
-        ...defaultContent,
-        ...parsed,
-        hero: { ...defaultContent.hero, ...(parsed.hero || {}) },
-        about: { ...defaultContent.about, ...(parsed.about || {}) },
-        services: parsed.services ?? defaultContent.services,
-        portfolio: { ...defaultContent.portfolio, ...(parsed.portfolio || {}) },
-      };
-    } catch (e) {
-      console.warn("Failed to parse stored content, falling back to defaults", e);
-      return defaultContent;
-    }
-  });
 
+  const [content, setContent] = useState<ContentState>(defaultContent);
+
+  // Fetch all content from backend on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leyarss-content", JSON.stringify(content));
-    }
-  }, [content]);
+    const fetchAllContent = async () => {
+      try {
+        // Hero
+        const heroRes = await fetch("/api/content/hero");
+        const heroData = await heroRes.json();
+        // About
+        const aboutRes = await fetch("/api/content/about");
+        const aboutData = await aboutRes.json();
+        // Services
+        const servicesRes = await fetch("/api/content/services");
+        const servicesData = await servicesRes.json();
+        // Portfolio (all categories)
+        const categories: TabKey[] = ["brand", "event", "print", "product"];
+        const portfolio: Record<TabKey, PortfolioCategory> = {} as any;
+        for (const cat of categories) {
+          const res = await fetch(`/api/content/portfolio/${cat}`);
+          const items = await res.json();
+          portfolio[cat] = {
+            title: defaultContent.portfolio[cat].title,
+            description: defaultContent.portfolio[cat].description,
+            items,
+          };
+        }
+        setContent({
+          hero: heroData.hero || defaultContent.hero,
+          about: aboutData.about || defaultContent.about,
+          services: servicesData || defaultContent.services,
+          portfolio,
+        });
+      } catch (err) {
+        console.error("Failed to fetch content from backend", err);
+      }
+    };
+    fetchAllContent();
+  }, []);
 
   const value = useMemo<ContentContextValue>(() => {
 
     const addService = async (service: Omit<Service, "id">) => {
       try {
-        const res = await fetch("http://localhost:5000/api/content", {
+        const res = await fetch("/api/content/services", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(service),
@@ -303,7 +318,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
     const updateHero = async (data: Partial<HeroContent>) => {
       try {
-        const res = await fetch("http://localhost:5000/api/content/hero", {
+        const res = await fetch("/api/content/hero", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -319,7 +334,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
     const updateAbout = async (data: Partial<AboutContent>) => {
       try {
-        const res = await fetch("http://localhost:5000/api/content/about", {
+        const res = await fetch("/api/content/about", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -335,7 +350,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
     const updateService = async (id: string, data: Partial<Service>) => {
       try {
-        const res = await fetch(`http://localhost:5000/api/content/${id}`, {
+        const res = await fetch(`/api/content/services/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -356,7 +371,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
     const removeService = async (id: string) => {
       try {
-        const res = await fetch(`http://localhost:5000/api/content/${id}`, {
+        const res = await fetch(`/api/content/services/${id}`, {
           method: "DELETE"
         });
         if (!res.ok) throw new Error("Failed to delete service");
@@ -372,7 +387,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
     const addPortfolioItem = async (category: TabKey, item: Omit<PortfolioItem, "id">) => {
       try {
-        const res = await fetch(`http://localhost:5000/api/content/portfolio/${category}`, {
+        const res = await fetch(`/api/content/portfolio/${category}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(item),
@@ -401,7 +416,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       data: Partial<PortfolioItem>
     ) => {
       try {
-        const res = await fetch(`http://localhost:5000/api/content/portfolio/${category}/${id}`, {
+        const res = await fetch(`/api/content/portfolio/${category}/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -428,7 +443,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
     const removePortfolioItem = async (category: TabKey, id: string) => {
       try {
-        const res = await fetch(`http://localhost:5000/api/content/portfolio/${category}/${id}`, {
+        const res = await fetch(`/api/content/portfolio/${category}/${id}`, {
           method: "DELETE"
         });
         if (!res.ok) throw new Error("Failed to delete portfolio item");
@@ -448,11 +463,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     };
 
     const applyChanges = () => {
-      // State is already synced to localStorage via the effect, but keeping the method
-      // allows the UI to provide an explicit "Apply" action for admins.
-      if (typeof window !== "undefined") {
-        localStorage.setItem("leyarss-content", JSON.stringify(content));
-      }
+      // No-op: state is always synced with backend
     };
 
     return {
