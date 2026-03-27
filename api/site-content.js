@@ -118,24 +118,25 @@ function normalizeContent(input) {
   };
 }
 
-export async function GET() {
+export default async function handler(req, res) {
   try {
-    const data = await get(CONTENT_KEY);
-    return Response.json(normalizeContent(data), { status: 200 });
+    if (req.method === "GET") {
+      const data = await get(CONTENT_KEY);
+      return res.status(200).json(normalizeContent(data));
+    }
+
+    if (req.method === "POST") {
+      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      const content = normalizeContent(body);
+
+      await put(CONTENT_KEY, content);
+
+      return res.status(200).json({ success: true });
+    }
+
+    res.setHeader("Allow", ["GET", "POST"]);
+    return res.status(405).json({ error: "Method Not Allowed" });
   } catch {
-    return Response.json({ error: "Failed to load site content." }, { status: 500 });
-  }
-}
-
-export async function POST(req) {
-  try {
-    const body = await req.json();
-    const content = normalizeContent(body);
-
-    await put(CONTENT_KEY, content);
-
-    return Response.json({ success: true }, { status: 200 });
-  } catch {
-    return Response.json({ error: "Failed to save site content." }, { status: 500 });
+    return res.status(500).json({ error: "Site content API failed." });
   }
 }
