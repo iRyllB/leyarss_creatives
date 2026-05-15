@@ -5,7 +5,11 @@ import "../styles/Services.css";
 import OverlayModal from "./OverlayModal";
 import "../styles/OverlayModal.css";
 
-export default function Services() {
+type ServicesProps = {
+  onContactClick?: () => void;
+};
+
+export default function Services({ onContactClick }: ServicesProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { publishedContent } = useContent();
   const servicesData = publishedContent.services;
@@ -104,6 +108,7 @@ export default function Services() {
         title={modalData?.title || ""}
         image={modalData?.image || ""}
         description={modalData?.description || ""}
+        onContactClick={onContactClick}
       />
     </section>
   );

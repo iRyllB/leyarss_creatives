@@ -46,8 +46,8 @@ export default function Home() {
           <Hero onContactClick={openContactModal} />
         </div>
         <About />
-        <Services />
-        <Portfolio />
+        <Services onContactClick={openContactModal} />
+        <Portfolio onContactClick={openContactModal} />
       </div>
 
       <Footer />

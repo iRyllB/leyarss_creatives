@@ -9,7 +9,11 @@ import "../styles/Portfolio.css";
 import OverlayModal from "./OverlayModal";
 import "../styles/OverlayModal.css";
 
-export default function Portfolio() {
+type PortfolioProps = {
+  onContactClick?: () => void;
+};
+
+export default function Portfolio({ onContactClick }: PortfolioProps) {
   const { publishedContent } = useContent();
   const [activeTab, setActiveTab] = useState<TabKey>("brand");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -169,6 +173,7 @@ export default function Portfolio() {
         title={modalData?.title || ""}
         image={modalData?.image || ""}
         description={modalData?.description || ""}
+        onContactClick={onContactClick}
       />
     </section>
   );
