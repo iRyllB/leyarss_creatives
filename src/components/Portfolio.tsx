@@ -1,16 +1,23 @@
 import { useEffect, useRef, useState } from "react";
+
 import {
   type TabKey,
   type PortfolioItem,
   useContent,
 } from "../context/ContentContext";
 import "../styles/Portfolio.css";
+import OverlayModal from "./OverlayModal";
+import "../styles/OverlayModal.css";
 
 export default function Portfolio() {
   const { publishedContent } = useContent();
   const [activeTab, setActiveTab] = useState<TabKey>("brand");
   const [currentIndex, setCurrentIndex] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
+
+  // Overlay modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<null | { title: string; image: string; description: string }>(null);
 
   const portfolioData = publishedContent.portfolio;
   const orderedKeys: TabKey[] = ["brand", "event", "print", "product"];
@@ -36,6 +43,21 @@ export default function Portfolio() {
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
     setCurrentIndex(0);
+  };
+
+  // Open modal with item details
+  const handleItemClick = (item: PortfolioItem) => {
+    setModalData({
+      title: item.title,
+      image: item.image,
+      description: item.details || item.description || "",
+    });
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setModalData(null);
   };
 
   const displayedItems = visibleItems.slice(
@@ -106,13 +128,14 @@ export default function Portfolio() {
           <div className="portfolio-slider-content">
             <div className="portfolio-items-track">
               {displayedItems.map((item: PortfolioItem) => (
-                <div className="portfolio-slider-item" key={item.id}>
+                <div
+                  className="portfolio-slider-item"
+                  key={item.id}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleItemClick(item)}
+                >
                   <div className="portfolio-item-image">
                     <img src={item.image} alt={item.title} />
-                    <div className="portfolio-item-overlay">
-                      <h4>{item.title}</h4>
-                      <p>{item.details}</p>
-                    </div>
                   </div>
                   <div className="portfolio-item-title">
                     <h5>{item.title}</h5>
@@ -138,6 +161,15 @@ export default function Portfolio() {
           )}
         </div>
       </div>
+
+      {/* Overlay Modal for Portfolio */}
+      <OverlayModal
+        open={modalOpen}
+        onClose={handleModalClose}
+        title={modalData?.title || ""}
+        image={modalData?.image || ""}
+        description={modalData?.description || ""}
+      />
     </section>
   );
 }

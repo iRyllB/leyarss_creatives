@@ -68,14 +68,14 @@
   }
 }
 
-.about-image img {
-  width: 420px;
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  display: block;
-  object-fit: cover;
-}
+  .about-image img {
+    width: 340px;
+    max-width: 90%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    object-fit: cover;
+  }
 
 /* =========================
    RESPONSIVE

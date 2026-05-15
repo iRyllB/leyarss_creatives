@@ -1,12 +1,19 @@
-import { useEffect, useRef } from "react";
+
+import { useEffect, useRef, useState } from "react";
 import { useContent } from "../context/ContentContext";
 import "../styles/Services.css";
+import OverlayModal from "./OverlayModal";
+import "../styles/OverlayModal.css";
 
 export default function Services() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { publishedContent } = useContent();
   const servicesData = publishedContent.services;
   const serviceIds = servicesData.map((service) => service.id).join("|");
+
+  // Overlay modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<null | { title: string; image: string; description: string }>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -37,6 +44,21 @@ export default function Services() {
     return () => observer.disconnect();
   }, [serviceIds]);
 
+  // Open modal with service details
+  const handleServiceClick = (service: (typeof servicesData)[number]) => {
+    setModalData({
+      title: service.title,
+      image: service.image,
+      description: service.description || service.category || "",
+    });
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setModalData(null);
+  };
+
   return (
     <section className="services" id="services" ref={sectionRef}>
       <div className="services-container">
@@ -50,7 +72,12 @@ export default function Services() {
 
         <div className="services-grid">
           {servicesData.map((service: (typeof servicesData)[number]) => (
-            <div className="service-card" key={service.id}>
+            <div
+              className="service-card"
+              key={service.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => handleServiceClick(service)}
+            >
               <div className="service-image-wrapper">
                 <img src={service.image} alt={service.title} />
                 <div className="service-overlay">
@@ -69,6 +96,15 @@ export default function Services() {
           ))}
         </div>
       </div>
+
+      {/* Overlay Modal for Services */}
+      <OverlayModal
+        open={modalOpen}
+        onClose={handleModalClose}
+        title={modalData?.title || ""}
+        image={modalData?.image || ""}
+        description={modalData?.description || ""}
+      />
     </section>
   );
 }

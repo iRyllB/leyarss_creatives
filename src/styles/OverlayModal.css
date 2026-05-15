@@ -1,0 +1,70 @@
+/* =========================
+   OVERLAY MODAL
+========================= */
+.overlay-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 30, 0.85);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayFadeIn 0.2s;
+}
+
+.overlay-modal-content {
+  background: #181c27;
+  border-radius: 18px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  padding: 36px 32px 28px 32px;
+  max-width: 420px;
+  width: 90vw;
+  text-align: center;
+  position: relative;
+  animation: modalPopIn 0.25s;
+}
+
+.overlay-modal-image {
+  width: 100%;
+  max-width: 260px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  object-fit: cover;
+}
+
+.overlay-modal-title {
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.overlay-modal-description {
+  color: #e0e0e0;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
+
+.overlay-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+.overlay-modal-close:hover {
+  color: #ce0c6f;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalPopIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
