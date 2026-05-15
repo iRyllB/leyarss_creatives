@@ -50,7 +50,7 @@ export default function Portfolio() {
     setModalData({
       title: item.title,
       image: item.image,
-      description: item.details || item.description || "",
+      description: item.details || "",
     });
     setModalOpen(true);
   };
