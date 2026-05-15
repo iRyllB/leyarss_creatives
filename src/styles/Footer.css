@@ -1,12 +1,15 @@
 .footer{
-  width:100vw;
-  background:#0b0f16;
+  width:100%;
+  background:
+    radial-gradient(1200px 380px at 50% 0%, rgba(0, 174, 239, 0.12), transparent 62%),
+    #0b0f16;
 
   display:flex;
   flex-direction:column;
   align-items:center;
   padding: 10px 0 30px;
-  margin-left:calc(-50vw + 50%);
+  margin-left:0;
+  overflow-x: clip;
 }
 
 .footer-container{
@@ -24,14 +27,35 @@
 
 .socials{
   display:flex;
-  gap:8px;
+  gap:12px;
+  flex-wrap:wrap;
 }
 
-.circle{
-  width:36px;
-  height:36px;
-  background:#D9D9D9;
+.social-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  padding:0;
   border-radius:50%;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.78);
+  text-decoration:none;
+  transition:transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease;
+}
+
+.social-link:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,0.32);
+  background:rgba(255,255,255,0.1);
+  color:#ffffff;
+}
+
+.social-link:focus-visible{
+  outline:2px solid #00aeef;
+  outline-offset:2px;
 }
 
 .footer-col{
@@ -42,12 +66,13 @@
 .footer-col h3{
   margin-bottom:20px;
   font-size:16px;
+  letter-spacing:0.04em;
 }
 
 /* ✅ Updated to support both <p> and <a> */
 .footer-col p,
 .footer-col a{
-  color:#D9D9D9;
+  color:#d6ddeb;
   font-size:14px;
   margin-bottom:12px;
   text-decoration:none;
@@ -56,19 +81,40 @@
 
 /* ✅ Hover effect for quick links */
 .footer-col a:hover{
-  opacity:0.7;
+  color:#ffffff;
+  opacity:1;
 }
 
 .footer-line{
   max-width:1200px;
   width:100%;
   height:1px;
-  background:white;
+  background:linear-gradient(90deg, rgba(0,174,239,0), rgba(255,255,255,0.78), rgba(236,0,140,0));
   margin:25px auto 0;
 }
 
 .copyright{
   margin-top:10px;
   font-size:14px;
-  color:white;
+  color:#b8c2d8;
+  letter-spacing:0.03em;
+}
+
+@media (max-width: 900px){
+  .footer-container{
+    flex-wrap:wrap;
+    gap:28px;
+    padding:0 20px;
+  }
+}
+
+@media (max-width: 600px){
+  .footer-container{
+    margin:34px auto 0;
+  }
+
+  .social-link{
+    width:40px;
+    height:40px;
+  }
 }

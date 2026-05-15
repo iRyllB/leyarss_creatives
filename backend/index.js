@@ -1,77 +1,157 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
+app.use(cors());
 app.use(express.json());
 
-// Admin schema/model
-const AdminSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-});
-const Admin = mongoose.model('Admin', AdminSchema);
-
-// Admin login route
+/* -------------------- ADMIN LOGIN -------------------- */
 app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
+
   try {
-    const admin = await Admin.findOne({ username });
-    if (!admin || admin.password !== password) {
+    const { data, error } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error || !data || data.password !== password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
     res.json({ success: true });
+
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Example schema/model
-const ContentSchema = new mongoose.Schema({
-  title: String,
-  body: String,
-  createdAt: { type: Date, default: Date.now }
-});
-const Content = mongoose.model('Content', ContentSchema);
+/* -------------------- CONTENT -------------------- */
 
-// CRUD routes
-app.get('/api/content', async (req, res) => {
-  const items = await Content.find();
-  res.json(items);
+
+// GET hero content
+app.get('/api/content/hero', async (req, res) => {
+  const { data, error } = await supabase.from('hero').select('*').single();
+  if (error) return res.status(500).json({ error });
+  res.json({ hero: data });
 });
 
-app.post('/api/content', async (req, res) => {
-  const item = new Content(req.body);
-  await item.save();
-  res.status(201).json(item);
+// UPDATE hero content
+app.put('/api/content/hero', async (req, res) => {
+  const { data, error } = await supabase
+    .from('hero')
+    .update(req.body)
+    .eq('id', 1)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error });
+  res.json({ hero: data });
 });
 
-app.put('/api/content/:id', async (req, res) => {
-  const item = await Content.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(item);
+// GET about content
+app.get('/api/content/about', async (req, res) => {
+  const { data, error } = await supabase.from('about').select('*').single();
+  if (error) return res.status(500).json({ error });
+  res.json({ about: data });
 });
 
-app.delete('/api/content/:id', async (req, res) => {
-  await Content.findByIdAndDelete(req.params.id);
+// UPDATE about content
+app.put('/api/content/about', async (req, res) => {
+  const { data, error } = await supabase
+    .from('about')
+    .update(req.body)
+    .eq('id', 1)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error });
+  res.json({ about: data });
+});
+
+// GET all services
+app.get('/api/content/services', async (req, res) => {
+  const { data, error } = await supabase.from('services').select('*');
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+});
+
+// ADD a service
+app.post('/api/content/services', async (req, res) => {
+  const { data, error } = await supabase.from('services').insert([req.body]).select().single();
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+});
+
+// UPDATE a service
+app.put('/api/content/services/:id', async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabase
+    .from('services')
+    .update(req.body)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+});
+
+// DELETE a service
+app.delete('/api/content/services/:id', async (req, res) => {
+  const { id } = req.params;
+  const { error } = await supabase.from('services').delete().eq('id', id);
+  if (error) return res.status(500).json({ error });
   res.json({ success: true });
 });
 
+// GET all portfolio items for a category
+app.get('/api/content/portfolio/:category', async (req, res) => {
+  const { category } = req.params;
+  const { data, error } = await supabase.from('portfolio').select('*').eq('category', category);
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+});
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(async () => {
-    // Ensure default admin exists
-    const defaultAdmin = await Admin.findOne({ username: 'admin' });
-    if (!defaultAdmin) {
-      await Admin.create({ username: 'admin', password: '@leyarss2026' });
-      console.log('Default admin created.');
-    }
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
+// ADD a portfolio item
+app.post('/api/content/portfolio/:category', async (req, res) => {
+  const { category } = req.params;
+  const { data, error } = await supabase.from('portfolio').insert([{ ...req.body, category }]).select().single();
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+});
+
+// UPDATE a portfolio item
+app.put('/api/content/portfolio/:category/:id', async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabase
+    .from('portfolio')
+    .update(req.body)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+});
+
+// DELETE a portfolio item
+app.delete('/api/content/portfolio/:category/:id', async (req, res) => {
+  const { id } = req.params;
+  const { error } = await supabase.from('portfolio').delete().eq('id', id);
+  if (error) return res.status(500).json({ error });
+  res.json({ success: true });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

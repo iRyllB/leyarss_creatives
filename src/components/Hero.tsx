@@ -7,7 +7,7 @@ type HeroProps = {
 
 export default function Hero({ onContactClick }: HeroProps) {
   const {
-    content: { hero },
+    publishedContent: { hero },
   } = useContent();
 
   return (
@@ -25,7 +25,17 @@ export default function Hero({ onContactClick }: HeroProps) {
           <p>{hero.subtext}</p>
 
           <div className="hero-buttons">
-            <button className="hero-brand-btn hero-btn-works">
+
+            <button
+              className="hero-brand-btn hero-btn-works"
+              type="button"
+              onClick={() => {
+                const section = document.getElementById("portfolio");
+                if (section) {
+                  section.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
               <span>VIEW OUR WORKS</span>
             </button>
 
